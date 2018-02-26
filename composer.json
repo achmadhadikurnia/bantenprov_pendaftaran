@@ -1,6 +1,7 @@
 {
     "name": "bantenprov/pendaftaran",
-    "description": "Nama Pendaftaran",
+    "description": "Nama Pendaftaran",,
+    "type": "library",
     "authors": [
         {
             "name": "bantenprov",
