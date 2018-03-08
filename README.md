@@ -120,7 +120,7 @@ $ php artisan vendor:publish --tag=pendaftaran-public
                 sidebar: resolve => require(['./components/Sidebar.vue'], resolve)
             },
             meta: {
-                title: "Indeks Pendaftaran"
+                title: "Pendaftaran"
             }
         },
         {
@@ -143,6 +143,17 @@ $ php artisan vendor:publish --tag=pendaftaran-public
             },
             meta: {
                 title: "View Pendaftaran"
+            }
+        },
+        {
+            path: '/admin/pendaftaran/:id/edit',
+            components: {
+                main: resolve => require(['./components/bantenprov/pendaftaran/Pendaftaran.edit.vue'], resolve),
+                navbar: resolve => require(['./components/Navbar.vue'], resolve),
+                sidebar: resolve => require(['./components/Sidebar.vue'], resolve)
+            },
+            meta: {
+                title: "Edit Pendaftaran"
             }
         },
         //== ...
