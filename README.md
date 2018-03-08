@@ -92,7 +92,7 @@ $ php artisan vendor:publish --tag=pendaftaran-public
         {
          path: '/dashboard/pendaftaran',
          components: {
-            main: resolve => require(['./components/views/bantenprov/pendaftaran/DashboardKetimpanganRegional.vue'], resolve),
+            main: resolve => require(['./components/views/bantenprov/pendaftaran/DashboardPendaftaran.vue'], resolve),
             navbar: resolve => require(['./components/Navbar.vue'], resolve),
             sidebar: resolve => require(['./components/Sidebar.vue'], resolve)
           },
@@ -115,7 +115,7 @@ $ php artisan vendor:publish --tag=pendaftaran-public
         {
             path: '/admin/pendaftaran',
             components: {
-                main: resolve => require(['./components/bantenprov/pendaftaran/KetimpanganRegional.index.vue'], resolve),
+                main: resolve => require(['./components/bantenprov/pendaftaran/Pendaftaran.index.vue'], resolve),
                 navbar: resolve => require(['./components/Navbar.vue'], resolve),
                 sidebar: resolve => require(['./components/Sidebar.vue'], resolve)
             },
@@ -126,7 +126,7 @@ $ php artisan vendor:publish --tag=pendaftaran-public
         {
             path: '/admin/pendaftaran/create',
             components: {
-                main: resolve => require(['./components/bantenprov/pendaftaran/KetimpanganRegional.add.vue'], resolve),
+                main: resolve => require(['./components/bantenprov/pendaftaran/Pendaftaran.add.vue'], resolve),
                 navbar: resolve => require(['./components/Navbar.vue'], resolve),
                 sidebar: resolve => require(['./components/Sidebar.vue'], resolve)
             },
@@ -137,7 +137,7 @@ $ php artisan vendor:publish --tag=pendaftaran-public
         {
             path: '/admin/pendaftaran/:id',
             components: {
-                main: resolve => require(['./components/bantenprov/pendaftaran/KetimpanganRegional.show.vue'], resolve),
+                main: resolve => require(['./components/bantenprov/pendaftaran/Pendaftaran.show.vue'], resolve),
                 navbar: resolve => require(['./components/Navbar.vue'], resolve),
                 sidebar: resolve => require(['./components/Sidebar.vue'], resolve)
             },
