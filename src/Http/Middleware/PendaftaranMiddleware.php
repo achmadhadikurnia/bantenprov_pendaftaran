@@ -1,4 +1,6 @@
-<?php namespace Bantenprov\Pendaftaran\Http\Middleware;
+<?php
+
+namespace Bantenprov\Pendaftaran\Http\Middleware;
 
 use Closure;
 
@@ -10,7 +12,6 @@ use Closure;
  */
 class PendaftaranMiddleware
 {
-
     /**
      * Handle an incoming request.
      *

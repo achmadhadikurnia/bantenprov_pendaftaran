@@ -1,4 +1,6 @@
-<?php namespace Bantenprov\Pendaftaran;
+<?php
+
+namespace Bantenprov\Pendaftaran;
 
 use Illuminate\Support\ServiceProvider;
 use Bantenprov\Pendaftaran\Console\Commands\PendaftaranCommand;
@@ -11,7 +13,6 @@ use Bantenprov\Pendaftaran\Console\Commands\PendaftaranCommand;
  */
 class PendaftaranServiceProvider extends ServiceProvider
 {
-
     /**
      * Indicates if loading of the provider is deferred.
      *
@@ -26,13 +27,14 @@ class PendaftaranServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        // Bootstrap handles
         $this->routeHandle();
         $this->configHandle();
         $this->langHandle();
         $this->viewHandle();
         $this->assetHandle();
         $this->migrationHandle();
+        $this->publicHandle();
+        $this->seedHandle();
     }
 
     /**
@@ -67,16 +69,6 @@ class PendaftaranServiceProvider extends ServiceProvider
     }
 
     /**
-     * Loading package routes
-     *
-     * @return void
-     */
-    protected function routeHandle()
-    {
-        $this->loadRoutesFrom(__DIR__.'/routes/routes.php');
-    }
-
-    /**
      * Loading and publishing package's config
      *
      * @return void
@@ -90,7 +82,17 @@ class PendaftaranServiceProvider extends ServiceProvider
 
         $this->publishes([
             $packageConfigPath => $appConfigPath,
-        ], 'config');
+        ], 'pendaftaran-config');
+    }
+
+    /**
+     * Loading package routes
+     *
+     * @return void
+     */
+    protected function routeHandle()
+    {
+        $this->loadRoutesFrom(__DIR__.'/routes/routes.php');
     }
 
     /**
@@ -106,7 +108,7 @@ class PendaftaranServiceProvider extends ServiceProvider
 
         $this->publishes([
             $packageTranslationsPath => resource_path('lang/vendor/pendaftaran'),
-        ], 'lang');
+        ], 'pendaftaran-lang');
     }
 
     /**
@@ -122,7 +124,7 @@ class PendaftaranServiceProvider extends ServiceProvider
 
         $this->publishes([
             $packageViewsPath => resource_path('views/vendor/pendaftaran'),
-        ], 'views');
+        ], 'pendaftaran-views');
     }
 
     /**
@@ -135,8 +137,8 @@ class PendaftaranServiceProvider extends ServiceProvider
         $packageAssetsPath = __DIR__.'/resources/assets';
 
         $this->publishes([
-            $packageAssetsPath => public_path('vendor/pendaftaran'),
-        ], 'public');
+            $packageAssetsPath => resource_path('assets'),
+        ], 'pendaftaran-assets');
     }
 
     /**
@@ -152,6 +154,24 @@ class PendaftaranServiceProvider extends ServiceProvider
 
         $this->publishes([
             $packageMigrationsPath => database_path('migrations')
-        ], 'migrations');
+        ], 'pendaftaran-migrations');
+    }
+
+    public function publicHandle()
+    {
+        $packagePublicPath = __DIR__.'/public';
+
+        $this->publishes([
+            $packagePublicPath => base_path('public')
+        ], 'pendaftaran-public');
+    }
+
+    public function seedHandle()
+    {
+        $packageSeedPath = __DIR__.'/database/seeds';
+
+        $this->publishes([
+            $packageSeedPath => base_path('database/seeds')
+        ], 'pendaftaran-seeds');
     }
 }

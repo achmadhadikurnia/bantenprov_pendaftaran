@@ -1,4 +1,6 @@
-<?php namespace Bantenprov\Pendaftaran\Contracts;
+<?php
+
+namespace Bantenprov\Pendaftaran\Contracts;
 
 /**
  * The PendaftaranAbstract class
