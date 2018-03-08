@@ -1,8 +1,8 @@
 <?php
 
-if (! function_exists('pendaftaran')) {
-    function pendaftaran()
+if (! function_exists('checkPendaftaran')) {
+    function checkPendaftaran()
     {
-        return 'Welcome to function pendaftaran() for Bantenprov\Pendaftaran package';
+        return 'Welcome to function checkPendaftaran() for Bantenprov\Pendaftaran package';
     }
 }

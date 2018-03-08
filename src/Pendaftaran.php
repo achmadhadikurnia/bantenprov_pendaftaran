@@ -1,4 +1,6 @@
-<?php namespace Bantenprov\Pendaftaran;
+<?php
+
+namespace Bantenprov\Pendaftaran;
 
 /**
  * The Pendaftaran class.
