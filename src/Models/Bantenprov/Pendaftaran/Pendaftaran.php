@@ -17,6 +17,12 @@ class Pendaftaran extends Model
     ];
     protected $fillable = [
         'label',
-        'description',
+        'description',        
+        'kegiatan_id'
     ];
+
+    public function kegiatan()
+    {
+        return $this->belongsTo('Bantenprov\Kegiatan\Models\Bantenprov\Kegiatan\Kegiatan','kegiatan_id');
+    }
 }
