@@ -5,7 +5,7 @@ namespace Bantenprov\Pendaftaran\Http\Controllers;
 /* Require */
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Bantenprov\BudgetAbsorption\Facades\PendaftaranFacade;
+use Bantenprov\Pendaftaran\Facades\PendaftaranFacade;
 
 /* Models */
 use Bantenprov\Pendaftaran\Models\Bantenprov\Pendaftaran\Pendaftaran;
