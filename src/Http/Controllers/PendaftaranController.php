@@ -60,11 +60,10 @@ class PendaftaranController extends Controller
 
         $perPage = request()->has('per_page') ? (int) request()->per_page : null;
         $response = $query->paginate($perPage);
-        
-        foreach($response as $kegiatan){            
+       
+        foreach($response as $kegiatan){   
             array_set($response->data, 'kegiatan_id', $kegiatan->kegiatan->label);           
         }
-        
         return response()->json($response)
             ->header('Access-Control-Allow-Origin', '*')
             ->header('Access-Control-Allow-Methods', 'GET');
