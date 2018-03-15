@@ -1,7 +1,7 @@
 <template>
   <div class="card">
     <div class="card-header">
-      <i class="fa fa-table" aria-hidden="true"></i> Edit Rasio Grup Kesenian
+      <i class="fa fa-table" aria-hidden="true"></i> Edit Pendaftaran
 
       <ul class="nav nav-pills card-header-pills pull-right">
         <li class="nav-item">
@@ -17,7 +17,6 @@
         <div class="form-row">
           <div class="col-md">
             <validate tag="div">
-              <input type="hidden" v-model="model.old_label" name="old_label">
               <input class="form-control" v-model="model.label" required autofocus name="label" type="text" placeholder="Label">
 
               <field-messages name="label" show="$invalid && $submitted" class="text-danger">
@@ -26,7 +25,9 @@
               </field-messages>
             </validate>
           </div>
+        </div>
 
+        <div class="form-row mt-4">
           <div class="col-md">
             <validate tag="div">
               <input class="form-control" v-model="model.description" name="description" type="text" placeholder="Description">
@@ -36,13 +37,30 @@
               </field-messages>
             </validate>
           </div>
+        </div>
 
-          <div class="col-auto">
+        <div class="form-row mt-4">
+					<div class="col-md">
+						<validate tag="div">
+						<label for="kegiatan">Kegiatan</label>
+						<v-select name="kegiatan" v-model="model.kegiatan" :options="kegiatan" class="mb-4"></v-select>
+
+						<field-messages name="kegiatan" show="$invalid && $submitted" class="text-danger">
+							<small class="form-text text-success">Looks good!</small>
+							<small class="form-text text-danger" slot="required">Label is a required field</small>
+						</field-messages>
+						</validate>
+					</div>
+				</div>
+
+        <div class="form-row mt-4">
+          <div class="col-md">            
             <button type="submit" class="btn btn-primary">Submit</button>
 
-            <button type="reset" class="btn btn-secondary" @click="reset">Reset</button>
+            <button type="reset" class="btn btn-secondary" @click="reset">Reset</button>            
           </div>
         </div>
+        
       </vue-form>
     </div>
   </div>
@@ -57,6 +75,7 @@ export default {
           this.model.label = response.data.pendaftaran.label;
           this.model.old_label = response.data.pendaftaran.label;
           this.model.description = response.data.pendaftaran.description;
+          this.model.kegiatan = response.data.kegiatan;
         } else {
           alert('Failed');
         }
@@ -64,15 +83,27 @@ export default {
       .catch(function(response) {
         alert('Break');
         window.location.href = '#/admin/pendaftaran';
-      });
+      }),
+
+      axios.get('api/pendaftaran/create')
+      .then(response => {           
+          response.data.kegiatan.forEach(element => {
+            this.kegiatan.push(element);
+          });
+      })
+      .catch(function(response) {
+        alert('Break');
+      })
   },
   data() {
     return {
       state: {},
       model: {
         label: "",
-        description: ""
-      }
+        description: "",
+        kegiatan: "",
+      },
+      kegiatan: []
     }
   },
   methods: {
@@ -85,7 +116,8 @@ export default {
         axios.put('api/pendaftaran/' + this.$route.params.id, {
             label: this.model.label,
             description: this.model.description,
-            old_label: this.model.old_label
+            old_label: this.model.old_label,
+            kegiatan_id: this.model.kegiatan.id
           })
           .then(response => {
             if (response.data.status == true) {

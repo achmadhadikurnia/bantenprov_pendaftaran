@@ -5,10 +5,11 @@ namespace Bantenprov\Pendaftaran\Http\Controllers;
 /* Require */
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Bantenprov\BudgetAbsorption\Facades\PendaftaranFacade;
+use Bantenprov\Pendaftaran\Facades\PendaftaranFacade;
 
 /* Models */
 use Bantenprov\Pendaftaran\Models\Bantenprov\Pendaftaran\Pendaftaran;
+use Bantenprov\Kegiatan\Models\Bantenprov\Kegiatan\Kegiatan;
 
 /* Etc */
 use Validator;
@@ -26,9 +27,12 @@ class PendaftaranController extends Controller
      *
      * @return void
      */
-    public function __construct(Pendaftaran $pendaftaran)
+    protected $kegiatanModel;
+
+    public function __construct(Pendaftaran $pendaftaran, Kegiatan $kegiatan)
     {
         $this->pendaftaran = $pendaftaran;
+        $this->kegiatanModel = $kegiatan;
     }
 
     /**
@@ -56,7 +60,10 @@ class PendaftaranController extends Controller
 
         $perPage = request()->has('per_page') ? (int) request()->per_page : null;
         $response = $query->paginate($perPage);
-
+       
+        foreach($response as $kegiatan){   
+            array_set($response->data, 'kegiatan_id', $kegiatan->kegiatan->label);           
+        }
         return response()->json($response)
             ->header('Access-Control-Allow-Origin', '*')
             ->header('Access-Control-Allow-Methods', 'GET');
@@ -68,13 +75,13 @@ class PendaftaranController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function create()
-    {
-        $pendaftaran = $this->pendaftaran;
-
-        $response['pendaftaran'] = $pendaftaran;
+    {        
+        $kegiatan = $this->kegiatanModel->all();
+        
+        $response['kegiatan'] = $kegiatan;
         $response['status'] = true;
 
-        return response()->json($pendaftaran);
+        return response()->json($response);
     }
 
     /**
@@ -88,6 +95,7 @@ class PendaftaranController extends Controller
         $pendaftaran = $this->pendaftaran;
 
         $validator = Validator::make($request->all(), [
+            'kegiatan_id' => 'required',
             'label' => 'required|max:16|unique:pendaftarans,label',
             'description' => 'max:255',
         ]);
@@ -98,6 +106,7 @@ class PendaftaranController extends Controller
             if ($check > 0) {
                 $response['message'] = 'Failed, label ' . $request->label . ' already exists';
             } else {
+                $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
                 $pendaftaran->label = $request->input('label');
                 $pendaftaran->description = $request->input('description');
                 $pendaftaran->save();
@@ -105,6 +114,7 @@ class PendaftaranController extends Controller
                 $response['message'] = 'success';
             }
         } else {
+            $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
             $pendaftaran->label = $request->input('label');
             $pendaftaran->description = $request->input('description');
             $pendaftaran->save();
@@ -144,6 +154,7 @@ class PendaftaranController extends Controller
         $pendaftaran = $this->pendaftaran->findOrFail($id);
 
         $response['pendaftaran'] = $pendaftaran;
+        $response['kegiatan'] = $pendaftaran->kegiatan;
         $response['status'] = true;
 
         return response()->json($response);
@@ -165,11 +176,13 @@ class PendaftaranController extends Controller
             $validator = Validator::make($request->all(), [
                 'label' => 'required|max:16',
                 'description' => 'max:255',
+                'kegiatan_id' => 'required'
             ]);
         } else {
             $validator = Validator::make($request->all(), [
                 'label' => 'required|max:16|unique:pendaftarans,label',
                 'description' => 'max:255',
+                'kegiatan_id' => 'required'
             ]);
         }
 
@@ -181,6 +194,7 @@ class PendaftaranController extends Controller
             } else {
                 $pendaftaran->label = $request->input('label');
                 $pendaftaran->description = $request->input('description');
+                $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
                 $pendaftaran->save();
 
                 $response['message'] = 'success';
@@ -188,6 +202,7 @@ class PendaftaranController extends Controller
         } else {
             $pendaftaran->label = $request->input('label');
             $pendaftaran->description = $request->input('description');
+            $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
             $pendaftaran->save();
 
             $response['message'] = 'success';

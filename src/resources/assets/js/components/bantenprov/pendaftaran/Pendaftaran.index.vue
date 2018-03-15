@@ -1,7 +1,7 @@
 <template>
   <div class="card">
     <div class="card-header">
-      <i class="fa fa-table" aria-hidden="true"></i> Rasio Grup Kesenian
+      <i class="fa fa-table" aria-hidden="true"></i> Pendaftaran
 
       <ul class="nav nav-pills card-header-pills pull-right">
         <li class="nav-item">
@@ -38,9 +38,9 @@
           @vuetable:loaded="onLoaded">
           <template slot="actions" slot-scope="props">
             <div class="btn-group pull-right" role="group" style="display:flex;">
-              <!--<button class="btn btn-info btn-sm" role="button" @click="viewRow(props.rowData)">
+              <button class="btn btn-info btn-sm" role="button" @click="viewRow(props.rowData)">
                 <span class="fa fa-eye"></span>
-              </button>-->
+              </button>
               <button class="btn btn-warning btn-sm" role="button" @click="editRow(props.rowData)">
                 <span class="fa fa-pencil"></span>
               </button>
@@ -95,6 +95,12 @@ export default {
           name: 'label',
           title: 'Label',
           sortField: 'label',
+          titleClass: 'center aligned'
+        },
+        {
+          name: 'kegiatan.label',
+          title: 'Kegiatan',
+          sortField: 'kegiatan_id',
           titleClass: 'center aligned'
         },
         {
