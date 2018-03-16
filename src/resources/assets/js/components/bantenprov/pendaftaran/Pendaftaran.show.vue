@@ -26,8 +26,18 @@
           </div>
         </div>
 
-        
-        
+        <div class="form-row mt-4">
+					<div class="col-md">
+						<b>Username :</b> {{ model.user.name }}
+					</div>
+				</div>
+
+        <div class="form-row mt-4">
+					<div class="col-md">
+						<b>Kegiatan :</b> {{ model.kegiatan.label }}
+					</div>
+				</div>
+
       </vue-form>
     </div>
   </div>
@@ -43,6 +53,7 @@ export default {
           this.model.old_label = response.data.pendaftaran.label;
           this.model.description = response.data.pendaftaran.description;
           this.model.kegiatan = response.data.kegiatan;
+          this.model.user = response.data.user;
         } else {
           alert('Failed');
         }
@@ -53,7 +64,7 @@ export default {
       }),
 
       axios.get('api/pendaftaran/create')
-      .then(response => {           
+      .then(response => {
           response.data.kegiatan.forEach(element => {
             this.kegiatan.push(element);
           });
@@ -68,6 +79,7 @@ export default {
       model: {
         label: "",
         description: "",
+        user:"",
         kegiatan: "",
       },
       kegiatan: []

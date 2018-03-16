@@ -20,26 +20,25 @@ class BantenprovPendaftaranSeederPendaftaran extends Seeder
 
         $pendaftarans = (object) [
             (object) [
+                'user_id' => '1',
                 'kegiatan_id' => '1',
-                'label' => 'Pendaftaran 1',
-                'description' => 'Pendaftaran satu'
+                'label' => 'Kegiatan 1',
+                'description' => 'Kegiatan satu'
             ],
             (object) [
+                'user_id' => '2',
                 'kegiatan_id' => '2',
-                'label' => 'Pendaftaran 2',
-                'description' => 'Pendaftaran dua',
+                'label' => 'Kegiatan 2',
+                'description' => 'Kegiatan dua',
             ]
         ];
 
         foreach ($pendaftarans as $pendaftaran) {
             $model = Pendaftaran::updateOrCreate(
                 [
+                    'user_id' => $pendaftaran->user_id,
                     'kegiatan_id' => $pendaftaran->kegiatan_id,
-                ],
-                [
                     'label' => $pendaftaran->label,
-                ],
-                [
                     'description' => $pendaftaran->description,
                 ]
             );
