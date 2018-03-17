@@ -5,11 +5,13 @@ namespace Bantenprov\Pendaftaran\Http\Controllers;
 /* Require */
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Bantenprov\Pendaftaran\Facades\PendaftaranFacade;
+use Bantenprov\BudgetAbsorption\Facades\PendaftaranFacade;
 
 /* Models */
 use Bantenprov\Pendaftaran\Models\Bantenprov\Pendaftaran\Pendaftaran;
 use Bantenprov\Kegiatan\Models\Bantenprov\Kegiatan\Kegiatan;
+use Bantenprov\VueWorkflow\Http\Traits\WorkflowTrait;
+use App\User;
 
 /* Etc */
 use Validator;
@@ -22,17 +24,21 @@ use Validator;
  */
 class PendaftaranController extends Controller
 {
+    use WorkflowTrait;
     /**
      * Create a new controller instance.
      *
      * @return void
      */
     protected $kegiatanModel;
+    protected $pendaftaran;
+    protected $user;
 
-    public function __construct(Pendaftaran $pendaftaran, Kegiatan $kegiatan)
+    public function __construct(Pendaftaran $pendaftaran, Kegiatan $kegiatan, User $user)
     {
-        $this->pendaftaran = $pendaftaran;
-        $this->kegiatanModel = $kegiatan;
+        $this->pendaftaran      = $pendaftaran;
+        $this->kegiatanModel    = $kegiatan;
+        $this->user             = $user;
     }
 
     /**
@@ -60,10 +66,15 @@ class PendaftaranController extends Controller
 
         $perPage = request()->has('per_page') ? (int) request()->per_page : null;
         $response = $query->paginate($perPage);
-       
-        foreach($response as $kegiatan){   
-            array_set($response->data, 'kegiatan_id', $kegiatan->kegiatan->label);           
+
+        foreach($response as $kegiatan){
+            array_set($response->data, 'kegiatan', $kegiatan->kegiatan->label);
         }
+
+        foreach($response as $user){
+            array_set($response->data, 'user', $user->user->name);
+        }
+
         return response()->json($response)
             ->header('Access-Control-Allow-Origin', '*')
             ->header('Access-Control-Allow-Methods', 'GET');
@@ -75,10 +86,16 @@ class PendaftaranController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function create()
-    {        
+    {
         $kegiatan = $this->kegiatanModel->all();
-        
+        $users = $this->user->all();
+
+        foreach($users as $user){
+            array_set($user, 'label', $user->name);
+        }
+
         $response['kegiatan'] = $kegiatan;
+        $response['user'] = $users;
         $response['status'] = true;
 
         return response()->json($response);
@@ -96,6 +113,7 @@ class PendaftaranController extends Controller
 
         $validator = Validator::make($request->all(), [
             'kegiatan_id' => 'required',
+            'user_id' => 'required',
             'label' => 'required|max:16|unique:pendaftarans,label',
             'description' => 'max:255',
         ]);
@@ -107,6 +125,7 @@ class PendaftaranController extends Controller
                 $response['message'] = 'Failed, label ' . $request->label . ' already exists';
             } else {
                 $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
+                $pendaftaran->user_id = $request->input('user_id');
                 $pendaftaran->label = $request->input('label');
                 $pendaftaran->description = $request->input('description');
                 $pendaftaran->save();
@@ -115,10 +134,10 @@ class PendaftaranController extends Controller
             }
         } else {
             $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
+            $pendaftaran->user_id = $request->input('user_id');
             $pendaftaran->label = $request->input('label');
             $pendaftaran->description = $request->input('description');
             $pendaftaran->save();
-
             $response['message'] = 'success';
         }
 
@@ -138,6 +157,8 @@ class PendaftaranController extends Controller
         $pendaftaran = $this->pendaftaran->findOrFail($id);
 
         $response['pendaftaran'] = $pendaftaran;
+        $response['kegiatan'] = $pendaftaran->kegiatan;
+        $response['user'] = $pendaftaran->user;
         $response['status'] = true;
 
         return response()->json($response);
@@ -153,8 +174,11 @@ class PendaftaranController extends Controller
     {
         $pendaftaran = $this->pendaftaran->findOrFail($id);
 
+        array_set($pendaftaran->user, 'label', $pendaftaran->user->name);
+
         $response['pendaftaran'] = $pendaftaran;
         $response['kegiatan'] = $pendaftaran->kegiatan;
+        $response['user'] = $pendaftaran->user;
         $response['status'] = true;
 
         return response()->json($response);
@@ -176,13 +200,15 @@ class PendaftaranController extends Controller
             $validator = Validator::make($request->all(), [
                 'label' => 'required|max:16',
                 'description' => 'max:255',
-                'kegiatan_id' => 'required'
+                'kegiatan_id' => 'required',
+                'user_id' => 'required',
             ]);
         } else {
             $validator = Validator::make($request->all(), [
                 'label' => 'required|max:16|unique:pendaftarans,label',
                 'description' => 'max:255',
-                'kegiatan_id' => 'required'
+                'kegiatan_id' => 'required',
+                'user_id' => 'required',
             ]);
         }
 
@@ -195,6 +221,7 @@ class PendaftaranController extends Controller
                 $pendaftaran->label = $request->input('label');
                 $pendaftaran->description = $request->input('description');
                 $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
+                $pendaftaran->user_id = $request->input('user_id');
                 $pendaftaran->save();
 
                 $response['message'] = 'success';
@@ -203,6 +230,7 @@ class PendaftaranController extends Controller
             $pendaftaran->label = $request->input('label');
             $pendaftaran->description = $request->input('description');
             $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
+            $pendaftaran->user_id = $request->input('user_id');
             $pendaftaran->save();
 
             $response['message'] = 'success';
