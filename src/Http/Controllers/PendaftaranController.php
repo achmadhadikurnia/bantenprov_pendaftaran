@@ -10,7 +10,6 @@ use Bantenprov\BudgetAbsorption\Facades\PendaftaranFacade;
 /* Models */
 use Bantenprov\Pendaftaran\Models\Bantenprov\Pendaftaran\Pendaftaran;
 use Bantenprov\Kegiatan\Models\Bantenprov\Kegiatan\Kegiatan;
-use Bantenprov\VueWorkflow\Http\Traits\WorkflowTrait;
 use App\User;
 
 /* Etc */
@@ -23,8 +22,7 @@ use Validator;
  * @author  bantenprov <developer.bantenprov@gmail.com>
  */
 class PendaftaranController extends Controller
-{
-    use WorkflowTrait;
+{  
     /**
      * Create a new controller instance.
      *
