@@ -13,6 +13,9 @@
 
 Pendaftaran
 
+### modul ini membutuhkan :
+`vue-trust`
+
 ### Install via composer
 
 - Development snapshot
@@ -26,6 +29,15 @@ $ composer require bantenprov/pendaftaran:dev-master
 ```bash
 $ composer require bantenprov/pendaftaran
 ```
+
+### Install `vue-trust`
+
+```bash
+$ composer require bantenprov/vue-trust:dev-master
+```
+
+Vue Trust Documentation : <a href="https://github.com/bantenprov/vue-trust">Vue trust</a>
+
 
 ### Download via github
 
