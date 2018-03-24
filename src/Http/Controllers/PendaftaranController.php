@@ -76,6 +76,8 @@ class PendaftaranController extends Controller
      */
     public function create()
     {
+        $response = [];        
+
         $kegiatan = $this->kegiatanModel->all();
         $users_special = $this->user->all();
         $users_standar = $this->user->find(\Auth::User()->id);
@@ -192,7 +194,9 @@ class PendaftaranController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
-    {                
+    {      
+        $response = [];
+                  
         $pendaftaran = $this->pendaftaran->findOrFail($id);
 
         if($request->old_label == $request->label && $request->user_id != $request->old_user_id){
