@@ -10,6 +10,7 @@
 [![Monthly Downloads](https://poser.pugx.org/bantenprov/pendaftaran/d/monthly)](https://packagist.org/packages/bantenprov/pendaftaran)
 [![Daily Downloads](https://poser.pugx.org/bantenprov/pendaftaran/d/daily)](https://packagist.org/packages/bantenprov/pendaftaran)
 
+
 Pendaftaran
 
 ### Install via composer
