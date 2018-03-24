@@ -205,7 +205,7 @@ class PendaftaranController extends Controller
     {
         $pendaftaran = $this->pendaftaran->findOrFail($id);
 
-        if ($request->input('old_label') == $request->input('label'))
+        if ($request->input('old_label') == $request->input('label') || $request->input('old_user_id') == $request->input('user_id'))
         {
             $validator = Validator::make($request->all(), [
                 'label' => 'required|max:16',
@@ -218,15 +218,15 @@ class PendaftaranController extends Controller
                 'label' => 'required|max:16|unique:pendaftarans,label',
                 'description' => 'max:255',
                 'kegiatan_id' => 'required',
-                'user_id' => 'required',
+                'user_id' => 'required|unique:pendaftarans,user_id',
             ]);
         }
 
         if ($validator->fails()) {
-            $check = $pendaftaran->where('label',$request->label)->whereNull('deleted_at')->count();
+            $check = $pendaftaran->where('label',$request->label)->orWhere('user_id', $request->user_id)->whereNull('deleted_at')->count();
 
             if ($check > 0) {
-                $response['message'] = 'Failed, label ' . $request->label . ' already exists';
+                $response['message'] = 'Failed, label or user already exists';
             } else {
                 $pendaftaran->label = $request->input('label');
                 $pendaftaran->description = $request->input('description');
