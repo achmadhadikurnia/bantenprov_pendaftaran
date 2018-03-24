@@ -69,7 +69,7 @@
 
         <div class="form-row mt-4">
           <div class="col-md">
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="submit" class="btn btn-primary">Submit1</button>
 
             <button type="reset" class="btn btn-secondary" @click="reset">Reset</button>
           </div>
@@ -88,9 +88,14 @@ export default {
         response.data.kegiatan.forEach(element => {
           this.kegiatan.push(element);
         });
-        response.data.user.forEach(user_element => {
+        if(response.data.user_special == true){
+          response.data.user.forEach(user_element => {
             this.user.push(user_element);
-        });
+          });
+        }else{
+          this.user.push(response.data.user);
+        }
+        
     })
     .catch(function(response) {
       alert('Break');
@@ -135,7 +140,7 @@ export default {
             }
           })
           .catch(function(response) {
-            alert('Break ' + response.data.message);
+            alert('Break');
           });
       }
     },
