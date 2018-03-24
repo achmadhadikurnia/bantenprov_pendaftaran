@@ -5,8 +5,6 @@ namespace Bantenprov\Pendaftaran\Http\Controllers;
 /* Require */
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Bantenprov\BudgetAbsorption\Facades\PendaftaranFacade;
-use Bantenprov\VueWorkflow\Http\Traits\WorkflowTrait;
 
 /* Models */
 use Bantenprov\Pendaftaran\Models\Bantenprov\Pendaftaran\Pendaftaran;
@@ -23,8 +21,7 @@ use Validator;
  * @author  bantenprov <developer.bantenprov@gmail.com>
  */
 class PendaftaranController extends Controller
-{  
-    use WorkflowTrait;
+{      
     /**
      * Create a new controller instance.
      *
