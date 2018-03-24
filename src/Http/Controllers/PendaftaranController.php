@@ -123,16 +123,16 @@ class PendaftaranController extends Controller
 
         $validator = Validator::make($request->all(), [
             'kegiatan_id' => 'required',
-            'user_id' => 'required',
+            'user_id' => 'required|max:16|unique:pendaftarans,user_id',
             'label' => 'required|max:16|unique:pendaftarans,label',
             'description' => 'max:255',
         ]);
 
         if($validator->fails()){
-            $check = $pendaftaran->where('label',$request->label)->whereNull('deleted_at')->count();
+            $check = $pendaftaran->where('label',$request->label)->orWhere('user_id', $request->user_id)->whereNull('deleted_at')->count();
 
             if ($check > 0) {
-                $response['message'] = 'Failed, label ' . $request->label . ' already exists';
+                $response['message'] = 'Failed, label or user already exists';
             } else {
                 $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
                 $pendaftaran->user_id = $request->input('user_id');
