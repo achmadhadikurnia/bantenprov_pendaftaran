@@ -105,9 +105,13 @@ export default {
           response.data.kegiatan.forEach(element => {
             this.kegiatan.push(element);
           });
-          response.data.user.forEach(user_element => {
-            this.user.push(user_element);
-          });
+          if(response.data.user_special == true){
+            response.data.user.forEach(user_element => {
+              this.user.push(user_element);
+            });
+          }else{
+            this.user.push(response.data.user);
+          }
       })
       .catch(function(response) {
         alert('Break');
