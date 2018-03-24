@@ -6,6 +6,7 @@ namespace Bantenprov\Pendaftaran\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Bantenprov\BudgetAbsorption\Facades\PendaftaranFacade;
+use Bantenprov\VueWorkflow\Http\Traits\WorkflowTrait;
 
 /* Models */
 use Bantenprov\Pendaftaran\Models\Bantenprov\Pendaftaran\Pendaftaran;
@@ -23,6 +24,7 @@ use Validator;
  */
 class PendaftaranController extends Controller
 {  
+    use WorkflowTrait;
     /**
      * Create a new controller instance.
      *
@@ -86,14 +88,24 @@ class PendaftaranController extends Controller
     public function create()
     {
         $kegiatan = $this->kegiatanModel->all();
-        $users = $this->user->all();
+        $users_special = $this->user->all();
+        $users_standar = $this->user->find(\Auth::User()->id);
+        
+        $role_check = \Auth::User()->hasRole(['superadministrator','administrator']);
 
-        foreach($users as $user){
-            array_set($user, 'label', $user->name);
-        }
+        if($role_check){
+            $response['user_special'] = true;
+            foreach($users_special as $user){
+                array_set($user, 'label', $user->name);
+            }
+            $response['user'] = $users_special;
+        }else{
+            $response['user_special'] = false;
+            array_set($users_standar, 'label', $users_standar->name);
+            $response['user'] = $users_standar;
+        } 
 
-        $response['kegiatan'] = $kegiatan;
-        $response['user'] = $users;
+        $response['kegiatan'] = $kegiatan;        
         $response['status'] = true;
 
         return response()->json($response);
@@ -122,20 +134,22 @@ class PendaftaranController extends Controller
             if ($check > 0) {
                 $response['message'] = 'Failed, label ' . $request->label . ' already exists';
             } else {
-                $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
-                $pendaftaran->user_id = $request->input('user_id');
-                $pendaftaran->label = $request->input('label');
-                $pendaftaran->description = $request->input('description');
-                $pendaftaran->save();
+                // $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
+                // $pendaftaran->user_id = $request->input('user_id');
+                // $pendaftaran->label = $request->input('label');
+                // $pendaftaran->description = $request->input('description');
+                $this->insertWithWorkflow($pendaftaran, $request->all());
+                //$pendaftaran->save();
 
                 $response['message'] = 'success';
             }
         } else {
-            $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
-            $pendaftaran->user_id = $request->input('user_id');
-            $pendaftaran->label = $request->input('label');
-            $pendaftaran->description = $request->input('description');
-            $pendaftaran->save();
+            // $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
+            // $pendaftaran->user_id = $request->input('user_id');
+            // $pendaftaran->label = $request->input('label');
+            // $pendaftaran->description = $request->input('description');
+            $this->insertWithWorkflow($pendaftaran, $request->all());
+            //$pendaftaran->save();
             $response['message'] = 'success';
         }
 
@@ -216,22 +230,26 @@ class PendaftaranController extends Controller
             if ($check > 0) {
                 $response['message'] = 'Failed, label ' . $request->label . ' already exists';
             } else {
-                $pendaftaran->label = $request->input('label');
-                $pendaftaran->description = $request->input('description');
-                $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
-                $pendaftaran->user_id = $request->input('user_id');
-                $pendaftaran->save();
+                // $pendaftaran->label = $request->input('label');
+                // $pendaftaran->description = $request->input('description');
+                // $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
+                // $pendaftaran->user_id = $request->input('user_id');
+                // $pendaftaran->save();
+                $update = $this->updateWithWorkflow($pendaftaran, $id, $request->all());
 
-                $response['message'] = 'success';
+                // $response['message'] = 'success';
+                $response['message'] = $update['message'];
             }
         } else {
-            $pendaftaran->label = $request->input('label');
-            $pendaftaran->description = $request->input('description');
-            $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
-            $pendaftaran->user_id = $request->input('user_id');
-            $pendaftaran->save();
+            // $pendaftaran->label = $request->input('label');
+            // $pendaftaran->description = $request->input('description');
+            // $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
+            // $pendaftaran->user_id = $request->input('user_id');
+            // $pendaftaran->save();
+            $update = $this->updateWithWorkflow($pendaftaran, $id, $request->all());
 
-            $response['message'] = 'success';
+            // $response['message'] = 'success';
+            $response['message'] = $update['message'];
         }
 
         $response['status'] = true;
