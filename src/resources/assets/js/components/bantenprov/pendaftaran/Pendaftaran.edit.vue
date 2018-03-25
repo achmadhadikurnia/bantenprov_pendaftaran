@@ -89,6 +89,7 @@ export default {
           this.model.user = response.data.user,
           this.model.label = response.data.pendaftaran.label;
           this.model.old_label = response.data.pendaftaran.label;
+          this.model.old_user_id = response.data.pendaftaran.user_id;
           this.model.description = response.data.pendaftaran.description;
           this.model.kegiatan = response.data.kegiatan;
         } else {
@@ -105,9 +106,13 @@ export default {
           response.data.kegiatan.forEach(element => {
             this.kegiatan.push(element);
           });
-          response.data.user.forEach(user_element => {
-            this.user.push(user_element);
-          });
+          if(response.data.user_special == true){
+            response.data.user.forEach(user_element => {
+              this.user.push(user_element);
+            });
+          }else{
+            this.user.push(response.data.user);
+          }
       })
       .catch(function(response) {
         alert('Break');
@@ -121,6 +126,8 @@ export default {
         user: "",
         description: "",
         kegiatan: "",
+        old_label: "",
+        old_user_id: ""
       },
       kegiatan: [],
       user: []
@@ -137,6 +144,7 @@ export default {
             label: this.model.label,
             description: this.model.description,
             old_label: this.model.old_label,
+            old_user_id: this.model.old_user_id,
             kegiatan_id: this.model.kegiatan.id,
             user_id: this.model.user.id
           })
