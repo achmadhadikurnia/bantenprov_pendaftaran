@@ -116,6 +116,7 @@ export default {
       })
       .catch(function(response) {
         alert('Break');
+        window.location.href = '#/admin/pendaftaran';
       })
   },
   data() {

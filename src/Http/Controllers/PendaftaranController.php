@@ -21,7 +21,7 @@ use Validator;
  * @author  bantenprov <developer.bantenprov@gmail.com>
  */
 class PendaftaranController extends Controller
-{      
+{
     /**
      * Create a new controller instance.
      *
@@ -76,12 +76,13 @@ class PendaftaranController extends Controller
      */
     public function create()
     {
-        $response = [];        
+        $response = [];
 
         $kegiatan = $this->kegiatanModel->all();
         $users_special = $this->user->all();
         $users_standar = $this->user->find(\Auth::User()->id);
-        
+        $current_user = \Auth::User();
+
         $role_check = \Auth::User()->hasRole(['superadministrator','administrator']);
 
         if($role_check){
@@ -94,9 +95,12 @@ class PendaftaranController extends Controller
             $response['user_special'] = false;
             array_set($users_standar, 'label', $users_standar->name);
             $response['user'] = $users_standar;
-        } 
+        }
 
-        $response['kegiatan'] = $kegiatan;        
+        array_set($current_user, 'label', $current_user->name);
+
+        $response['current_user'] = $current_user;
+        $response['kegiatan'] = $kegiatan;
         $response['status'] = true;
 
         return response()->json($response);
@@ -129,7 +133,7 @@ class PendaftaranController extends Controller
                 $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
                 $pendaftaran->user_id = $request->input('user_id');
                 $pendaftaran->label = $request->input('label');
-                $pendaftaran->description = $request->input('description');                
+                $pendaftaran->description = $request->input('description');
                 $pendaftaran->save();
 
                 $response['message'] = 'success';
@@ -138,7 +142,7 @@ class PendaftaranController extends Controller
             $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
             $pendaftaran->user_id = $request->input('user_id');
             $pendaftaran->label = $request->input('label');
-            $pendaftaran->description = $request->input('description');            
+            $pendaftaran->description = $request->input('description');
             $pendaftaran->save();
             $response['message'] = 'success';
         }
@@ -194,9 +198,9 @@ class PendaftaranController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
-    {      
+    {
         $response = [];
-                  
+
         $pendaftaran = $this->pendaftaran->findOrFail($id);
 
         if($request->old_label == $request->label && $request->user_id != $request->old_user_id){
@@ -239,7 +243,7 @@ class PendaftaranController extends Controller
             $check_label = $pendaftaran->where('label',$request->label)->whereNull('deleted_at')->count();
 
             if($fail == "label"){
-                if ($check_label > 0) {                    
+                if ($check_label > 0) {
                     $response['message'] = 'Failed, label already exists';
                 }else{
                     $pendaftaran->label = $request->input('label');
@@ -248,10 +252,10 @@ class PendaftaranController extends Controller
                     $pendaftaran->user_id = $request->input('user_id');
                     $pendaftaran->save();
 
-                    $response['message'] = 'success'; 
+                    $response['message'] = 'success';
                 }
             }elseif($fail == "user_id"){
-                if ($check_user > 0) {                    
+                if ($check_user > 0) {
                     $response['message'] = 'Failed, user already exists';
                 }else{
                     $pendaftaran->label = $request->input('label');
@@ -263,7 +267,7 @@ class PendaftaranController extends Controller
                     $response['message'] = 'success';
                 }
             }else{
-                if ($check_user > 0 && $check_label > 0) {                    
+                if ($check_user > 0 && $check_label > 0) {
                     $response['message'] = 'Failed, user and label already exists';
                 }else{
                     $pendaftaran->label = $request->input('label');
@@ -274,7 +278,7 @@ class PendaftaranController extends Controller
 
                     $response['message'] = 'success';
                 }
-            }                       
+            }
         } else {
             $pendaftaran->label = $request->input('label');
             $pendaftaran->description = $request->input('description');

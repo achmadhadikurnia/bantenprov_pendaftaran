@@ -85,6 +85,9 @@ export default {
   mounted(){
     axios.get('api/pendaftaran/create')
     .then(response => {
+      if (response.data.status == true) {
+        this.model.user = response.data.current_user,
+
         response.data.kegiatan.forEach(element => {
           this.kegiatan.push(element);
         });
@@ -95,10 +98,13 @@ export default {
         }else{
           this.user.push(response.data.user);
         }
-
+      } else {
+        alert('Failed');
+      }
     })
     .catch(function(response) {
       alert('Break');
+      window.location.href = '#/admin/pendaftaran';
     });
   },
   data() {
@@ -111,7 +117,8 @@ export default {
         kegiatan: "",
       },
       kegiatan: [],
-      user: []
+      user: [],
+      user_id: ""
     }
   },
   methods: {
