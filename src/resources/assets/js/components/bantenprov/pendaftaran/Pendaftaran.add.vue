@@ -42,12 +42,12 @@
         <div class="form-row mt-4">
 					<div class="col-md">
 						<validate tag="div">
-						<label for="user_id">Username</label>
-						<v-select name="user_id" v-model="model.user" :options="user" class="mb-4"></v-select>
+						<label for="kegiatan">Kegiatan</label>
+						<v-select name="kegiatan" v-model="model.kegiatan" :options="kegiatan" class="mb-4"></v-select>
 
-						<field-messages name="user_id" show="$invalid && $submitted" class="text-danger">
+						<field-messages name="kegiatan" show="$invalid && $submitted" class="text-danger">
 							<small class="form-text text-success">Looks good!</small>
-							<small class="form-text text-danger" slot="required">username is a required field</small>
+							<small class="form-text text-danger" slot="required">Label is a required field</small>
 						</field-messages>
 						</validate>
 					</div>
@@ -56,12 +56,12 @@
         <div class="form-row mt-4">
 					<div class="col-md">
 						<validate tag="div">
-						<label for="kegiatan">Kegiatan</label>
-						<v-select name="kegiatan" v-model="model.kegiatan" :options="kegiatan" class="mb-4"></v-select>
+						<label for="user_id">Username</label>
+						<v-select name="user_id" v-model="model.user" :options="user" class="mb-4"></v-select>
 
-						<field-messages name="kegiatan" show="$invalid && $submitted" class="text-danger">
+						<field-messages name="user_id" show="$invalid && $submitted" class="text-danger">
 							<small class="form-text text-success">Looks good!</small>
-							<small class="form-text text-danger" slot="required">Label is a required field</small>
+							<small class="form-text text-danger" slot="required">username is a required field</small>
 						</field-messages>
 						</validate>
 					</div>
@@ -85,6 +85,9 @@ export default {
   mounted(){
     axios.get('api/pendaftaran/create')
     .then(response => {
+      if (response.data.status == true) {
+        this.model.user = response.data.current_user;
+
         response.data.kegiatan.forEach(element => {
           this.kegiatan.push(element);
         });
@@ -95,10 +98,13 @@ export default {
         }else{
           this.user.push(response.data.user);
         }
-        
+      } else {
+        alert('Failed');
+      }
     })
     .catch(function(response) {
       alert('Break');
+      window.location.href = '#/admin/pendaftaran';
     });
   },
   data() {
@@ -111,7 +117,8 @@ export default {
         kegiatan: "",
       },
       kegiatan: [],
-      user: []
+      user: [],
+      user_id: ""
     }
   },
   methods: {
