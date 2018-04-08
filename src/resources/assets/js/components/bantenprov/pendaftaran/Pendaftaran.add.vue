@@ -86,7 +86,7 @@ export default {
     axios.get('api/pendaftaran/create')
     .then(response => {
       if (response.data.status == true) {
-        this.model.user = response.data.current_user,
+        this.model.user = response.data.current_user;
 
         response.data.kegiatan.forEach(element => {
           this.kegiatan.push(element);
