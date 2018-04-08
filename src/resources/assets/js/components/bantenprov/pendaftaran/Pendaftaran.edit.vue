@@ -42,12 +42,12 @@
         <div class="form-row mt-4">
 					<div class="col-md">
 						<validate tag="div">
-						<label for="user_id">Username</label>
-						<v-select name="user_id" v-model="model.user" :options="user" class="mb-4"></v-select>
+						<label for="kegiatan">Kegiatan</label>
+						<v-select name="kegiatan" v-model="model.kegiatan" :options="kegiatan" class="mb-4"></v-select>
 
-						<field-messages name="user_id" show="$invalid && $submitted" class="text-danger">
+						<field-messages name="kegiatan" show="$invalid && $submitted" class="text-danger">
 							<small class="form-text text-success">Looks good!</small>
-							<small class="form-text text-danger" slot="required">username is a required field</small>
+							<small class="form-text text-danger" slot="required">Label is a required field</small>
 						</field-messages>
 						</validate>
 					</div>
@@ -56,12 +56,12 @@
         <div class="form-row mt-4">
 					<div class="col-md">
 						<validate tag="div">
-						<label for="kegiatan">Kegiatan</label>
-						<v-select name="kegiatan" v-model="model.kegiatan" :options="kegiatan" class="mb-4"></v-select>
+						<label for="user_id">Username</label>
+						<v-select name="user_id" v-model="model.user" :options="user" class="mb-4"></v-select>
 
-						<field-messages name="kegiatan" show="$invalid && $submitted" class="text-danger">
+						<field-messages name="user_id" show="$invalid && $submitted" class="text-danger">
 							<small class="form-text text-success">Looks good!</small>
-							<small class="form-text text-danger" slot="required">Label is a required field</small>
+							<small class="form-text text-danger" slot="required">username is a required field</small>
 						</field-messages>
 						</validate>
 					</div>
