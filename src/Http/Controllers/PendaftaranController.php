@@ -79,7 +79,6 @@ class PendaftaranController extends Controller
         $response = [];
 
         $kegiatan = $this->kegiatanModel->all();
-        $kegiatan->user_id =$this->user->find(\Auth::User()->id);
         $users_special = $this->user->all();
         $users_standar = $this->user->find(\Auth::User()->id);
         $current_user = \Auth::User();
