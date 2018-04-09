@@ -1,7 +1,7 @@
 <template>
   <div class="card">
     <div class="card-header">
-      <i class="fa fa-table" aria-hidden="true"></i> Add Pendaftaran
+      <i class="fa fa-table" aria-hidden="true"></i> Add pendaftaran
 
       <ul class="nav nav-pills card-header-pills pull-right">
         <li class="nav-item">
@@ -54,13 +54,27 @@
 				</div>
 
         <div class="form-row mt-4">
-          <div class="col-md">            
+					<div class="col-md">
+						<validate tag="div">
+						<label for="user_id">Username</label>
+						<v-select name="user_id" v-model="model.user" :options="user" class="mb-4"></v-select>
+
+						<field-messages name="user_id" show="$invalid && $submitted" class="text-danger">
+							<small class="form-text text-success">Looks good!</small>
+							<small class="form-text text-danger" slot="required">username is a required field</small>
+						</field-messages>
+						</validate>
+					</div>
+				</div>
+
+        <div class="form-row mt-4">
+          <div class="col-md">
             <button type="submit" class="btn btn-primary">Submit</button>
 
-            <button type="reset" class="btn btn-secondary" @click="reset">Reset</button>            
+            <button type="reset" class="btn btn-secondary" @click="reset">Reset</button>
           </div>
         </div>
-        
+
       </vue-form>
     </div>
   </div>
@@ -70,13 +84,27 @@
 export default {
   mounted(){
     axios.get('api/pendaftaran/create')
-    .then(response => {           
+    .then(response => {
+      if (response.data.status == true) {
+        this.model.user = response.data.current_user;
+
         response.data.kegiatan.forEach(element => {
           this.kegiatan.push(element);
         });
+        if(response.data.user_special == true){
+          response.data.user.forEach(user_element => {
+            this.user.push(user_element);
+          });
+        }else{
+          this.user.push(response.data.user);
+        }
+      } else {
+        alert('Failed');
+      }
     })
     .catch(function(response) {
       alert('Break');
+      window.location.href = '#/admin/pendaftaran';
     });
   },
   data() {
@@ -84,10 +112,13 @@ export default {
       state: {},
       model: {
         label: "",
+        user: "",
         description: "",
-        kegiatan: ""
+        kegiatan: "",
       },
-      kegiatan: []
+      kegiatan: [],
+      user: [],
+      user_id: ""
     }
   },
   methods: {
@@ -100,7 +131,8 @@ export default {
         axios.post('api/pendaftaran', {
             label: this.model.label,
             description: this.model.description,
-            kegiatan_id: this.model.kegiatan.id
+            kegiatan_id: this.model.kegiatan.id,
+            user_id: this.model.user.id
           })
           .then(response => {
             if (response.data.status == true) {
@@ -115,7 +147,7 @@ export default {
             }
           })
           .catch(function(response) {
-            alert('Break ' + response.data.message);
+            alert('Break');
           });
       }
     },

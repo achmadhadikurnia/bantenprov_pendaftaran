@@ -98,6 +98,12 @@ export default {
           titleClass: 'center aligned'
         },
         {
+          name: 'user.name',
+          title: 'Username',
+          sortField: 'user_id',
+          titleClass: 'center aligned'
+        },
+        {
           name: 'kegiatan.label',
           title: 'Kegiatan',
           sortField: 'kegiatan_id',

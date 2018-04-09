@@ -10,7 +10,11 @@
 [![Monthly Downloads](https://poser.pugx.org/bantenprov/pendaftaran/d/monthly)](https://packagist.org/packages/bantenprov/pendaftaran)
 [![Daily Downloads](https://poser.pugx.org/bantenprov/pendaftaran/d/daily)](https://packagist.org/packages/bantenprov/pendaftaran)
 
+
 Pendaftaran
+
+### modul ini membutuhkan :
+`vue-trust`
 
 ### Install via composer
 
@@ -25,6 +29,15 @@ $ composer require bantenprov/pendaftaran:dev-master
 ```bash
 $ composer require bantenprov/pendaftaran
 ```
+
+### Install `vue-trust`
+
+```bash
+$ composer require bantenprov/vue-trust:dev-master
+```
+
+Vue Trust Documentation : <a href="https://github.com/bantenprov/vue-trust">Vue trust</a>
+
 
 ### Download via github
 

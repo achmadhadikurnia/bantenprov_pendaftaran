@@ -1,7 +1,7 @@
 <template>
   <div class="card">
     <div class="card-header">
-      <i class="fa fa-table" aria-hidden="true"></i> Edit Pendaftaran
+      <i class="fa fa-table" aria-hidden="true"></i> Edit pendaftaran
 
       <ul class="nav nav-pills card-header-pills pull-right">
         <li class="nav-item">
@@ -54,13 +54,27 @@
 				</div>
 
         <div class="form-row mt-4">
-          <div class="col-md">            
+					<div class="col-md">
+						<validate tag="div">
+						<label for="user_id">Username</label>
+						<v-select name="user_id" v-model="model.user" :options="user" class="mb-4"></v-select>
+
+						<field-messages name="user_id" show="$invalid && $submitted" class="text-danger">
+							<small class="form-text text-success">Looks good!</small>
+							<small class="form-text text-danger" slot="required">username is a required field</small>
+						</field-messages>
+						</validate>
+					</div>
+				</div>
+
+        <div class="form-row mt-4">
+          <div class="col-md">
             <button type="submit" class="btn btn-primary">Submit</button>
 
-            <button type="reset" class="btn btn-secondary" @click="reset">Reset</button>            
+            <button type="reset" class="btn btn-secondary" @click="reset">Reset</button>
           </div>
         </div>
-        
+
       </vue-form>
     </div>
   </div>
@@ -72,8 +86,10 @@ export default {
     axios.get('api/pendaftaran/' + this.$route.params.id + '/edit')
       .then(response => {
         if (response.data.status == true) {
+          this.model.user = response.data.user,
           this.model.label = response.data.pendaftaran.label;
           this.model.old_label = response.data.pendaftaran.label;
+          this.model.old_user_id = response.data.pendaftaran.user_id;
           this.model.description = response.data.pendaftaran.description;
           this.model.kegiatan = response.data.kegiatan;
         } else {
@@ -86,13 +102,21 @@ export default {
       }),
 
       axios.get('api/pendaftaran/create')
-      .then(response => {           
+      .then(response => {
           response.data.kegiatan.forEach(element => {
             this.kegiatan.push(element);
           });
+          if(response.data.user_special == true){
+            response.data.user.forEach(user_element => {
+              this.user.push(user_element);
+            });
+          }else{
+            this.user.push(response.data.user);
+          }
       })
       .catch(function(response) {
         alert('Break');
+        window.location.href = '#/admin/pendaftaran';
       })
   },
   data() {
@@ -100,10 +124,14 @@ export default {
       state: {},
       model: {
         label: "",
+        user: "",
         description: "",
         kegiatan: "",
+        old_label: "",
+        old_user_id: ""
       },
-      kegiatan: []
+      kegiatan: [],
+      user: []
     }
   },
   methods: {
@@ -117,7 +145,9 @@ export default {
             label: this.model.label,
             description: this.model.description,
             old_label: this.model.old_label,
-            kegiatan_id: this.model.kegiatan.id
+            old_user_id: this.model.old_user_id,
+            kegiatan_id: this.model.kegiatan.id,
+            user_id: this.model.user.id
           })
           .then(response => {
             if (response.data.status == true) {
