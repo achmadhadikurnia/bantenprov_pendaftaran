@@ -115,6 +115,7 @@ class PendaftaranController extends Controller
     public function store(Request $request)
     {
         $pendaftaran = $this->pendaftaran;
+        $current_user_id = \Auth::user()->id;
 
         $validator = Validator::make($request->all(), [
             'kegiatan_id' => 'required',
@@ -125,13 +126,13 @@ class PendaftaranController extends Controller
 
         if($validator->fails()){
 
-            $check = $pendaftaran->where('label',$request->label)->orWhere('user_id', $request->user_id)->whereNull('deleted_at')->count();
+            $check = $pendaftaran->where('label',$request->label)->orWhere('user_id', $current_user_id)->whereNull('deleted_at')->count();
 
             if ($check > 0) {
                 $response['message'] = 'Failed, label or user already exists';
             } else {
                 $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
-                $pendaftaran->user_id = $request->input('user_id');
+                $pendaftaran->user_id = $current_user_id;
                 $pendaftaran->label = $request->input('label');
                 $pendaftaran->description = $request->input('description');
                 $pendaftaran->save();
@@ -140,7 +141,7 @@ class PendaftaranController extends Controller
             }
         } else {
             $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
-            $pendaftaran->user_id = $request->input('user_id');
+            $pendaftaran->user_id = $current_user_id;
             $pendaftaran->label = $request->input('label');
             $pendaftaran->description = $request->input('description');
             $pendaftaran->save();
