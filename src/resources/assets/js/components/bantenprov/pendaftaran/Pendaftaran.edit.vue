@@ -17,23 +17,11 @@
         <div class="form-row">
           <div class="col-md">
             <validate tag="div">
-              <input class="form-control" v-model="model.label" required autofocus name="label" type="text" placeholder="Label">
+              <input class="form-control" v-model="model.tanggal_pendaftaran" required autofocus name="label" type="text" placeholder="tanggal_pendaftaran">
 
-              <field-messages name="label" show="$invalid && $submitted" class="text-danger">
+              <field-messages name="tanggal_pendaftaran" show="$invalid && $submitted" class="text-danger">
                 <small class="form-text text-success">Looks good!</small>
-                <small class="form-text text-danger" slot="required">Label is a required field</small>
-              </field-messages>
-            </validate>
-          </div>
-        </div>
-
-        <div class="form-row mt-4">
-          <div class="col-md">
-            <validate tag="div">
-              <input class="form-control" v-model="model.description" name="description" type="text" placeholder="Description">
-
-              <field-messages name="description" show="$invalid && $submitted" class="text-danger">
-                <small class="form-text text-success">Looks good!</small>
+                <small class="form-text text-danger" slot="required">Tanggal Pendaftaran is a required field</small>
               </field-messages>
             </validate>
           </div>
@@ -87,10 +75,9 @@ export default {
       .then(response => {
         if (response.data.status == true) {
           this.model.user = response.data.user,
-          this.model.label = response.data.pendaftaran.label;
           this.model.old_label = response.data.pendaftaran.label;
           this.model.old_user_id = response.data.pendaftaran.user_id;
-          this.model.description = response.data.pendaftaran.description;
+          this.model.tanggal_pendaftaran = response.data.pendaftaran.tanggal_pendaftaran;
           this.model.kegiatan = response.data.kegiatan;
         } else {
           alert('Failed');
@@ -123,9 +110,8 @@ export default {
     return {
       state: {},
       model: {
-        label: "",
+        tanggal_pendaftaran: "",
         user: "",
-        description: "",
         kegiatan: "",
         old_label: "",
         old_user_id: ""
@@ -142,8 +128,7 @@ export default {
         return;
       } else {
         axios.put('api/pendaftaran/' + this.$route.params.id, {
-            label: this.model.label,
-            description: this.model.description,
+            tanggal_pendaftaran: this.model.tanggal_pendaftaran,
             old_label: this.model.old_label,
             old_user_id: this.model.old_user_id,
             kegiatan_id: this.model.kegiatan.id,
@@ -170,8 +155,7 @@ export default {
       axios.get('api/pendaftaran/' + this.$route.params.id + '/edit')
         .then(response => {
           if (response.data.status == true) {
-            this.model.label = response.data.pendaftaran.label;
-            this.model.description = response.data.pendaftaran.description;
+            this.model.tanggal_pendaftaran = response.data.pendaftaran.tanggal_pendaftaran;
           } else {
             alert('Failed');
           }

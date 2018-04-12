@@ -18,8 +18,7 @@ class Pendaftaran extends Model
     protected $fillable = [
         'kegiatan_id',
         'user_id',
-        'label',
-        'description'
+        'tanggal_pendaftaran',
     ];
 
     public function kegiatan()

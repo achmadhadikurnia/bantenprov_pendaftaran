@@ -56,8 +56,8 @@ class PendaftaranController extends Controller
         if ($request->exists('filter')) {
             $query->where(function($q) use($request) {
                 $value = "%{$request->filter}%";
-                $q->where('label', 'like', $value)
-                    ->orWhere('description', 'like', $value);
+                $q->where('tanggal_pendaftaran', 'like', $value)
+                    ->orWhere('tanggal_pendaftaran', 'like', $value);
             });
         }
 
@@ -120,21 +120,19 @@ class PendaftaranController extends Controller
         $validator = Validator::make($request->all(), [
             'kegiatan_id' => 'required',
             'user_id' => 'required|max:16|unique:pendaftarans,user_id',
-            'label' => 'required|max:16|unique:pendaftarans,label',
-            'description' => 'max:255',
+            'tanggal_pendaftaran' => 'required',
         ]);
 
         if($validator->fails()){
 
-            $check = $pendaftaran->where('label',$request->label)->orWhere('user_id', $current_user_id)->whereNull('deleted_at')->count();
+            $check = $pendaftaran->where('user_id', $current_user_id)->whereNull('deleted_at')->count();
 
             if ($check > 0) {
-                $response['message'] = 'Failed, label or user already exists';
+                $response['message'] = 'Failed, User already exists';
             } else {
                 $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
                 $pendaftaran->user_id = $current_user_id;
-                $pendaftaran->label = $request->input('label');
-                $pendaftaran->description = $request->input('description');
+                $pendaftaran->tanggal_pendaftaran = $request->input('tanggal_pendaftaran');
                 $pendaftaran->save();
 
                 $response['message'] = 'success';
@@ -142,8 +140,7 @@ class PendaftaranController extends Controller
         } else {
             $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
             $pendaftaran->user_id = $current_user_id;
-            $pendaftaran->label = $request->input('label');
-            $pendaftaran->description = $request->input('description');
+            $pendaftaran->tanggal_pendaftaran = $request->input('tanggal_pendaftaran');
             $pendaftaran->save();
             $response['message'] = 'success';
         }
@@ -200,92 +197,41 @@ class PendaftaranController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $response = [];
-
         $pendaftaran = $this->pendaftaran->findOrFail($id);
 
-        if($request->old_label == $request->label && $request->user_id != $request->old_user_id){
+        if ($request->input('old_user_id') == $request->input('user_id'))
+        {
             $validator = Validator::make($request->all(), [
-                'label' => 'required',
-                'description' => 'max:255',
+                'user_id' => 'required',
                 'kegiatan_id' => 'required',
+                'tanggal_pendaftaran' => 'required',
+            ]);
+        } else {
+            $validator = Validator::make($request->all(), [
                 'user_id' => 'required|unique:pendaftarans,user_id',
-            ]);
-            $fail = "user_id";
-        }elseif($request->old_label != $request->label && $request->user_id == $request->old_user_id){
-            $validator = Validator::make($request->all(), [
-                'label' => 'required|unique:pendaftarans,label',
-                'description' => 'max:255',
                 'kegiatan_id' => 'required',
-                'user_id' => 'required',
+                'tanggal_pendaftaran' => 'required',
             ]);
-            $fail = "label";
-        }elseif($request->old_label == $request->label && $request->user_id == $request->old_user_id){
-            $validator = Validator::make($request->all(), [
-                'label' => 'required',
-                'description' => 'max:255',
-                'kegiatan_id' => 'required',
-                'user_id' => 'required',
-            ]);
-        }else{
-            $validator = Validator::make($request->all(), [
-                'label' => 'required|unique:pendaftarans,label',
-                'description' => 'max:255',
-                'kegiatan_id' => 'required',
-                'user_id' => 'required|unique:pendaftarans,label',
-            ]);
-            $fail = "label & user_id";
         }
 
         if ($validator->fails()) {
+            $check = $pendaftaran->where('user_id',$request->user_id)->whereNull('deleted_at')->count();
 
-            $check_user = $pendaftaran->where('user_id', $request->user_id)->whereNull('deleted_at')->count();
+            if ($check > 0) {
+                $response['message'] = 'Failed, username ' . $request->user_id . ' already exists';
+            } else {
+                $pendaftaran->user_id = $request->input('user_id');
+                $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
+                $pendaftaran->tanggal_pendaftaran = $request->input('tanggal_pendaftaran');
+                $pendaftaran->save();
 
-            $check_label = $pendaftaran->where('label',$request->label)->whereNull('deleted_at')->count();
-
-            if($fail == "label"){
-                if ($check_label > 0) {
-                    $response['message'] = 'Failed, label already exists';
-                }else{
-                    $pendaftaran->label = $request->input('label');
-                    $pendaftaran->description = $request->input('description');
-                    $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
-                    $pendaftaran->user_id = $request->input('user_id');
-                    $pendaftaran->save();
-
-                    $response['message'] = 'success';
-                }
-            }elseif($fail == "user_id"){
-                if ($check_user > 0) {
-                    $response['message'] = 'Failed, user already exists';
-                }else{
-                    $pendaftaran->label = $request->input('label');
-                    $pendaftaran->description = $request->input('description');
-                    $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
-                    $pendaftaran->user_id = $request->input('user_id');
-                    $pendaftaran->save();
-
-                    $response['message'] = 'success';
-                }
-            }else{
-                if ($check_user > 0 && $check_label > 0) {
-                    $response['message'] = 'Failed, user and label already exists';
-                }else{
-                    $pendaftaran->label = $request->input('label');
-                    $pendaftaran->description = $request->input('description');
-                    $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
-                    $pendaftaran->user_id = $request->input('user_id');
-                    $pendaftaran->save();
-
-                    $response['message'] = 'success';
-                }
+                $response['message'] = 'success';
             }
         } else {
-            $pendaftaran->label = $request->input('label');
-            $pendaftaran->description = $request->input('description');
-            $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
             $pendaftaran->user_id = $request->input('user_id');
-            $pendaftaran->save();
+                $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
+                $pendaftaran->tanggal_pendaftaran = $request->input('tanggal_pendaftaran');
+                $pendaftaran->save();
 
             $response['message'] = 'success';
         }
