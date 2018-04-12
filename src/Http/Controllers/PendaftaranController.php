@@ -115,7 +115,7 @@ class PendaftaranController extends Controller
     public function store(Request $request)
     {
         $pendaftaran = $this->pendaftaran;
-        $current_user_id = \Auth::user()->id;
+        $current_user_id = $request->user_id;
 
         $validator = Validator::make($request->all(), [
             'kegiatan_id' => 'required',
@@ -132,15 +132,15 @@ class PendaftaranController extends Controller
             } else {
                 $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
                 $pendaftaran->user_id = $current_user_id;
-                $pendaftaran->tanggal_pendaftaran = $request->input('tanggal_pendaftaran');
-                $pendaftaran->save();
+                $pendaftaran->tanggal_pendaftaran = $request->input('tanggal_pendaftaran')." 00:00:00";
+                $pendaftaran->save();                
 
                 $response['message'] = 'success';
             }
         } else {
             $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
             $pendaftaran->user_id = $current_user_id;
-            $pendaftaran->tanggal_pendaftaran = $request->input('tanggal_pendaftaran');
+            $pendaftaran->tanggal_pendaftaran = $request->input('tanggal_pendaftaran')." 00:00:00";
             $pendaftaran->save();
             $response['message'] = 'success';
         }
