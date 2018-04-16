@@ -17,25 +17,12 @@
         <div class="form-row">
           <div class="col-md">
             <validate tag="div">
-              <input class="form-control" v-model="model.label" required autofocus name="label" type="text" placeholder="Label">
-
-              <field-messages name="label" show="$invalid && $submitted" class="text-danger">
-                <small class="form-text text-success">Looks good!</small>
-                <small class="form-text text-danger" slot="required">Label is a required field</small>
-              </field-messages>
-            </validate>
-          </div>
-        </div>
-
-        <div class="form-row mt-4">
-          <div class="col-md">
-            <validate tag="div">
-              <input class="form-control" v-model="model.description" name="description" type="text" placeholder="Description">
-
-              <field-messages name="description" show="$invalid && $submitted" class="text-danger">
-                <small class="form-text text-success">Looks good!</small>
-              </field-messages>
-            </validate>
+              <label for="model.tanggal_pendaftaran">Tanggal Pendaftaran</label>
+            <input class="form-control" v-model="model.tanggal_pendaftaran" required autofocus name="tanggal_pendaftaran" type="date" placeholder="Tanggal Pendaftaran">
+            <field-messages name="tanggal_pendaftaran" show="$invalid && $submitted" class="text-danger"> 
+              <small class="form-text text-danger" slot="required">Tanggal Pendaftaran is a required field</small>
+            </field-messages>
+            </validate> 
           </div>
         </div>
 
@@ -111,9 +98,8 @@ export default {
     return {
       state: {},
       model: {
-        label: "",
+        tanggal_pendaftaran: "",
         user: "",
-        description: "",
         kegiatan: "",
       },
       kegiatan: [],
@@ -129,8 +115,7 @@ export default {
         return;
       } else {
         axios.post('api/pendaftaran', {
-            label: this.model.label,
-            description: this.model.description,
+            tanggal_pendaftaran: this.model.tanggal_pendaftaran,
             kegiatan_id: this.model.kegiatan.id,
             user_id: this.model.user.id
           })
@@ -153,8 +138,7 @@ export default {
     },
     reset() {
       this.model = {
-          label: "",
-          description: ""
+          tanggal_pendaftaran: ""
       };
     },
     back() {
