@@ -5,7 +5,7 @@ namespace Bantenprov\Pendaftaran\Http\Controllers;
 /* Require */
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-
+use Carbon\Carbon;
 /* Models */
 use Bantenprov\Pendaftaran\Models\Bantenprov\Pendaftaran\Pendaftaran;
 use Bantenprov\Kegiatan\Models\Bantenprov\Kegiatan\Kegiatan;
@@ -132,15 +132,15 @@ class PendaftaranController extends Controller
             } else {
                 $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
                 $pendaftaran->user_id = $current_user_id;
-                $pendaftaran->tanggal_pendaftaran = $request->input('tanggal_pendaftaran')." 00:00:00";
-                $pendaftaran->save();                
+                $pendaftaran->tanggal_pendaftaran = $request->input('tanggal_pendaftaran');
+                $pendaftaran->save();
 
                 $response['message'] = 'success';
             }
         } else {
             $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
             $pendaftaran->user_id = $current_user_id;
-            $pendaftaran->tanggal_pendaftaran = $request->input('tanggal_pendaftaran')." 00:00:00";
+            $pendaftaran->tanggal_pendaftaran = $request->input('tanggal_pendaftaran');
             $pendaftaran->save();
             $response['message'] = 'success';
         }

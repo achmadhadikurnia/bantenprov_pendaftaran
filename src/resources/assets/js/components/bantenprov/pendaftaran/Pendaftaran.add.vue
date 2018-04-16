@@ -18,11 +18,11 @@
           <div class="col-md">
             <validate tag="div">
               <label for="model.tanggal_pendaftaran">Tanggal Pendaftaran</label>
-            <input class="form-control" v-model="model.tanggal_pendaftaran" required autofocus name="tanggal_pendaftaran" type="date" placeholder="Tanggal Pendaftaran">
-            <field-messages name="tanggal_pendaftaran" show="$invalid && $submitted" class="text-danger"> 
+               <input disabled class="form-control" type="datetime"  v-model="model.tanggal_pendaftaran" required name="tanggal_pendaftaran" >
+            <field-messages name="tanggal_pendaftaran" show="$invalid && $submitted" class="text-danger">
               <small class="form-text text-danger" slot="required">Tanggal Pendaftaran is a required field</small>
             </field-messages>
-            </validate> 
+            </validate>
           </div>
         </div>
 
@@ -68,7 +68,17 @@
 </template>
 
 <script>
+import VueMoment from 'vue-moment'
+import moment from 'moment-timezone'
+
+Vue.use(VueMoment, {
+    moment,
+})
+
+var tanggal={}
+tanggal.mydate = moment(new Date()).format("YYYY-MM-DD k:mm:ss ");
 export default {
+
   mounted(){
     axios.get('api/pendaftaran/create')
     .then(response => {
@@ -97,17 +107,21 @@ export default {
   data() {
     return {
       state: {},
+
       model: {
-        tanggal_pendaftaran: "",
+        tanggal_pendaftaran: tanggal.mydate,
         user: "",
         kegiatan: "",
       },
       kegiatan: [],
       user: [],
-      user_id: ""
+      user_id: "",
     }
   },
   methods: {
+    moment: function (date) {
+      return moment(date);
+    },
     onSubmit: function() {
       let app = this;
 
