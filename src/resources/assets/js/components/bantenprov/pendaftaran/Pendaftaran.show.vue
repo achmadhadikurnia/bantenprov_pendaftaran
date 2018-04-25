@@ -13,21 +13,19 @@
     </div>
 
     <div class="card-body">
-      <vue-form class="form-horizontal form-validation" :state="state" @submit.prevent="onSubmit">
+      <dl class="row">
+          <dt class="col-4">Tanggal Pendaftaran</dt>
+          <dd class="col-8">{{ model.tanggal_pendaftaran }}</dd>
 
-        <div class="form-row mt-4">
-          <div class="col-md">
-            <b>Tanggal Pendaftaran :</b> {{ model.tanggal_pendaftaran }}
-          </div>
-        </div>
+          <dt class="col-4">Kegiatan</dt>
+          <dd class="col-8">{{ model.kegiatan.label }}</dd>
 
-        <div class="form-row mt-4">
-					<div class="col-md">
-						<b>Kegiatan :</b> {{ model.kegiatan.label }}
-					</div>
-				</div>
+          <dt class="col-4">Sekolah Tujuan</dt>
+          <dd class="col-8">{{ model.sekolah.nama }}</dd>
 
-      </vue-form>
+
+      </dl>
+  
     </div>
      <div class="card-footer text-muted">
         <div class="row">
@@ -49,11 +47,12 @@ export default {
     axios.get('api/pendaftaran/' + this.$route.params.id)
       .then(response => {
         if (response.data.status == true) {
-          this.model.tanggal_pendaftaran = response.data.pendaftaran.tanggal_pendaftaran;
-          this.model.kegiatan = response.data.kegiatan;
-          this.model.user = response.data.user;
-          this.model.created_at = response.data.pendaftaran.created_at;
-          this.model.updated_at = response.data.pendaftaran.updated_at;
+          this.model.tanggal_pendaftaran  = response.data.pendaftaran.tanggal_pendaftaran;
+          this.model.kegiatan             = response.data.kegiatan;
+          this.model.user                 = response.data.user;
+          this.model.sekolah              = response.data.sekolah;
+          this.model.created_at           = response.data.pendaftaran.created_at;
+          this.model.updated_at           = response.data.pendaftaran.updated_at;
         } else {
           alert('Failed');
         }
@@ -77,13 +76,15 @@ export default {
     return {
       state: {},
       model: {
-        tanggal_pendaftaran: "",
-        user:"",
-        kegiatan: "",
-        created_at: "",
-        updated_at: "",
+        tanggal_pendaftaran : "",
+        user                : "",
+        kegiatan            : "",
+        sekolah             : "",
+        created_at          : "",
+        updated_at          : "",
       },
-      kegiatan: []
+      kegiatan: [],
+      sekolah : [],
     }
   },
   methods: {

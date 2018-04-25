@@ -17,6 +17,7 @@ class CreatePendaftaransTable extends Migration
 			$table->integer('user_id');
 			$table->integer('kegiatan_id');
 			$table->dateTime('tanggal_pendaftaran')->nullable();
+			$table->integer('sekolah_id')->nullable();
 			$table->timestamps();
 			$table->softDeletes();
 		});
