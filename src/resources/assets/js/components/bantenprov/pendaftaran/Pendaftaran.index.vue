@@ -98,6 +98,12 @@ export default {
           titleClass: 'center aligned'
         },
         {
+          name: 'sekolah.nama',
+          title: 'Sekolah Tujuan',
+          sortField: 'sekolah_id',
+          titleClass: 'center aligned'
+        },
+        {
           name: 'kegiatan.label',
           title: 'Kegiatan',
           sortField: 'kegiatan_id',
