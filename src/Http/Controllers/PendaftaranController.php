@@ -185,14 +185,17 @@ class PendaftaranController extends Controller
      */
     public function edit($id)
     {
-        $pendaftaran = $this->pendaftaran->findOrFail($id);
 
-        array_set($pendaftaran->user, 'label', $pendaftaran->user->name);
+        $pendaftaran = $this->pendaftaran->with(['kegiatan', 'sekolah', 'user' ])->findOrFail($id);
+
+        $response['pendaftaran']['user']     = array_add($pendaftaran->user, 'label', $pendaftaran->user->name);
+
+
 
         $response['pendaftaran']    = $pendaftaran;
-        $response['kegiatan']       = $pendaftaran->kegiatan;
-        $response['sekolah']        = $pendaftaran->sekolah->nama;
-        $response['user']           = $pendaftaran->user;
+        //$response['kegiatan']       = $pendaftaran->kegiatan;
+        //$response['sekolah']        = $pendaftaran->sekolah->nama;
+        //$response['user']           = $pendaftaran->user;
         $response['error']          = false;
         $response['message']        = 'Success';
         $response['status']         = true;

@@ -97,12 +97,12 @@ export default {
     axios.get('api/pendaftaran/' + this.$route.params.id + '/edit')
       .then(response => {
         if (response.data.status == true && response.data.error == false) {
-          this.model.user                 = response.data.user,
+          this.model.user                 = response.data.pendaftaran.user,
           this.model.old_label            = response.data.pendaftaran.label;
           this.model.old_user_id          = response.data.pendaftaran.user_id;
           this.model.tanggal_pendaftaran  = response.data.pendaftaran.tanggal_pendaftaran;
-          this.model.sekolah              = response.data.sekolah;
-          this.model.kegiatan             = response.data.kegiatan;
+          this.model.sekolah              = response.data.pendaftaran.sekolah;
+          this.model.kegiatan             = response.data.pendaftaran.kegiatan;
        
         } else {
           alert('Failed');
@@ -115,12 +115,14 @@ export default {
 
       axios.get('api/pendaftaran/create')
       .then(response => {
+        if (response.data.status == true && response.data.error == false)
           response.data.kegiatan.forEach(element => {
             this.kegiatan.push(element);
           });
           response.data.sekolah.forEach(element => {
             this.sekolah.push(element);
           });
+          
           if(response.data.user_special == true){
             response.data.user.forEach(user_element => {
               this.user.push(user_element);
@@ -153,6 +155,7 @@ export default {
       model: {
         tanggal_pendaftaran : tanggal.mydate,
         user                : "",
+        user_id             : "",
         kegiatan            : "",
         old_label           : "",
         old_user_id         : "",
