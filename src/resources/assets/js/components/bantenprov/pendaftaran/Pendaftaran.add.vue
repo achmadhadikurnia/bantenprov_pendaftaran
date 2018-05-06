@@ -17,12 +17,11 @@
         <div class="form-row">
           <div class="col-md">
             <validate tag="div">
-              <input class="form-control" v-model="model.label" required autofocus name="label" type="text" placeholder="Label">
-
-              <field-messages name="label" show="$invalid && $submitted" class="text-danger">
-                <small class="form-text text-success">Looks good!</small>
-                <small class="form-text text-danger" slot="required">Label is a required field</small>
-              </field-messages>
+              <label for="model.tanggal_pendaftaran">Tanggal Pendaftaran</label>
+               <input disabled class="form-control" type="datetime"  v-model="model.tanggal_pendaftaran" required name="tanggal_pendaftaran" >
+            <field-messages name="tanggal_pendaftaran" show="$invalid && $submitted" class="text-danger">
+              <small class="form-text text-danger" slot="required">Tanggal Pendaftaran is a required field</small>
+            </field-messages>
             </validate>
           </div>
         </div>
@@ -30,11 +29,13 @@
         <div class="form-row mt-4">
           <div class="col-md">
             <validate tag="div">
-              <input class="form-control" v-model="model.description" name="description" type="text" placeholder="Description">
+            <label for="sekolah_id">Sekolah Tujuan</label>
+            <v-select name="sekolah_id" v-model="model.sekolah" :options="sekolah" class="mb-4"></v-select>
 
-              <field-messages name="description" show="$invalid && $submitted" class="text-danger">
-                <small class="form-text text-success">Looks good!</small>
-              </field-messages>
+            <field-messages name="sekolah_id" show="$invalid && $submitted" class="text-danger">
+              <small class="form-text text-success">Looks good!</small>
+              <small class="form-text text-danger" slot="required">Sekolah Tujuan is a required field</small>
+            </field-messages>
             </validate>
           </div>
         </div>
@@ -81,15 +82,49 @@
 </template>
 
 <script>
+import VueMoment from 'vue-moment'
+import moment from 'moment-timezone'
+import swal from 'sweetalert2';
+
+Vue.use(VueMoment, {
+    moment,
+})
+
+var tanggal={}
+tanggal.mydate = moment(new Date()).format("YYYY-MM-DD k:mm:ss ");
 export default {
-  mounted(){
+
+  data(){
+    return {
+        state: {},
+        title: 'Add Pendaftaran',
+        model: {
+            tanggal_pendaftaran : tanggal.mydate,
+            user_id             :     "",
+            kegiatan_id         :     "",
+            sekolah_id          :     "",
+
+            user                :     "",
+            kegiatan            :     "",
+            sekolah             :     "",
+        
+          },
+            user      : [],
+            kegiatan  : [],
+            sekolah   : [],
+        }
+      },
+
+    mounted(){
     axios.get('api/pendaftaran/create')
     .then(response => {
       if (response.data.status == true) {
         this.model.user = response.data.current_user;
-
         response.data.kegiatan.forEach(element => {
           this.kegiatan.push(element);
+        });
+        response.data.sekolah.forEach(element => {
+          this.sekolah.push(element);
         });
         if(response.data.user_special == true){
           response.data.user.forEach(user_element => {
@@ -99,29 +134,30 @@ export default {
           this.user.push(response.data.user);
         }
       } else {
-        alert('Failed');
-      }
-    })
+          swal(
+            'Failed',
+            'Oops... '+response.data.message,
+            'error'
+          );
+
+          app.back();
+        }
+      })
     .catch(function(response) {
-      alert('Break');
-      window.location.href = '#/admin/pendaftaran';
-    });
+        swal(
+          'Not Found',
+          'Oops... Your page is not found.',
+          'error'
+        );
+
+        app.back();
+      });
   },
-  data() {
-    return {
-      state: {},
-      model: {
-        label: "",
-        user: "",
-        description: "",
-        kegiatan: "",
-      },
-      kegiatan: [],
-      user: [],
-      user_id: ""
-    }
-  },
+
   methods: {
+    moment: function (date) {
+      return moment(date);
+    },
     onSubmit: function() {
       let app = this;
 
@@ -129,32 +165,52 @@ export default {
         return;
       } else {
         axios.post('api/pendaftaran', {
-            label: this.model.label,
-            description: this.model.description,
-            kegiatan_id: this.model.kegiatan.id,
-            user_id: this.model.user.id
+            tanggal_pendaftaran       : this.model.tanggal_pendaftaran,
+            kegiatan_id               : this.model.kegiatan.id,
+            user_id                   : this.model.user.id,
+            sekolah_id                : this.model.sekolah.id,
           })
           .then(response => {
             if (response.data.status == true) {
-              if(response.data.message == 'success'){
-                alert(response.data.message);
+              if(response.data.error == false){
+                swal(
+                  'Created',
+                  'Yeah!!! Your data has been created.',
+                  'success'
+                );
+
                 app.back();
               }else{
-                alert(response.data.message);
+                swal(
+                  'Failed',
+                  'Oops... '+response.data.message,
+                  'error'
+                );
               }
             } else {
-              alert(response.data.message);
+              swal(
+                'Failed',
+                'Oops... '+response.data.message,
+                'error'
+              );
+
+              app.back();
             }
           })
           .catch(function(response) {
-            alert('Break');
+            swal(
+              'Not Found',
+              'Oops... Your page is not found.',
+              'error'
+            );
+
+            app.back();
           });
       }
     },
     reset() {
       this.model = {
-          label: "",
-          description: ""
+          tanggal_pendaftaran: ""
       };
     },
     back() {

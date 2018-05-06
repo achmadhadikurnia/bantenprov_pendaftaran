@@ -14,6 +14,9 @@
 Pendaftaran
 
 ### modul ini membutuhkan :
+
+`vue-moment`
+`moment-timezone`
 `vue-trust`
 
 ### Install via composer
@@ -38,6 +41,21 @@ $ composer require bantenprov/vue-trust:dev-master
 
 Vue Trust Documentation : <a href="https://github.com/bantenprov/vue-trust">Vue trust</a>
 
+### Install `vue-moment`
+
+```bash
+$ npm install vue-moment
+```
+
+### Install `moment-timezone`
+
+```bash
+$ npm install moment-timezone
+
+atau
+
+$ npm install moment-timezone --save
+```
 
 ### Download via github
 
