@@ -83,7 +83,7 @@ class PendaftaranController extends Controller
         if ($request->exists('filter')) {
             $query->where(function($q) use($request) {
                 $value = "%{$request->filter}%";
-                $q->where('tanggal_pendaftaran', 'like', $value);
+                $q->where(\DB::raw('CAST(tanggal_pendaftaran AS varchar)'), 'like', $value);
             });
         }
 
