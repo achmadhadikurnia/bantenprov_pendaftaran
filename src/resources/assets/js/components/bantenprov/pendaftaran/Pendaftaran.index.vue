@@ -92,15 +92,15 @@ export default {
           dataClass: 'right aligned'
         },
         {
-          name: 'label',
-          title: 'Label',
-          sortField: 'label',
+          name: 'tanggal_pendaftaran',
+          title: 'Tanggal Pendaftaran',
+          sortField: 'tanggal_pendaftaran',
           titleClass: 'center aligned'
         },
         {
-          name: 'user.name',
-          title: 'Username',
-          sortField: 'user_id',
+          name: 'sekolah.nama',
+          title: 'Sekolah Tujuan',
+          sortField: 'sekolah_id',
           titleClass: 'center aligned'
         },
         {
@@ -110,9 +110,9 @@ export default {
           titleClass: 'center aligned'
         },
         {
-          name: 'description',
-          title: 'Description',
-          sortField: 'description',
+          name: 'user.name',
+          title: 'Username',
+          sortField: 'user_id',
           titleClass: 'center aligned'
         },
         {
@@ -123,7 +123,7 @@ export default {
         },
       ],
       sortOrder: [{
-        field: 'label',
+        field: 'user_id',
         direction: 'asc'
       }],
       moreParams: {},

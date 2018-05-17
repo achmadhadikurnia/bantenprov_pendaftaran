@@ -5,14 +5,17 @@ namespace Bantenprov\Pendaftaran\Http\Controllers;
 /* Require */
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-
+use Carbon\Carbon;
 /* Models */
 use Bantenprov\Pendaftaran\Models\Bantenprov\Pendaftaran\Pendaftaran;
 use Bantenprov\Kegiatan\Models\Bantenprov\Kegiatan\Kegiatan;
+use Bantenprov\Sekolah\Models\Bantenprov\Sekolah\Sekolah;
+use Bantenprov\Sekolah\Models\Bantenprov\Sekolah\AdminSekolah;
 use App\User;
 
 /* Etc */
 use Validator;
+use Auth;
 
 /**
  * The PendaftaranController class.
@@ -21,7 +24,7 @@ use Validator;
  * @author  bantenprov <developer.bantenprov@gmail.com>
  */
 class PendaftaranController extends Controller
-{      
+{
     /**
      * Create a new controller instance.
      *
@@ -30,12 +33,16 @@ class PendaftaranController extends Controller
     protected $kegiatanModel;
     protected $pendaftaran;
     protected $user;
+    protected $sekolah;
+    protected $admin_sekolah;
 
-    public function __construct(Pendaftaran $pendaftaran, Kegiatan $kegiatan, User $user)
+    public function __construct(Pendaftaran $pendaftaran, Kegiatan $kegiatan, User $user, Sekolah $sekolah, AdminSekolah $admin_sekolah)
     {
         $this->pendaftaran      = $pendaftaran;
         $this->kegiatanModel    = $kegiatan;
         $this->user             = $user;
+        $this->sekolah          = $sekolah;
+        $this->admin_sekolah    = $admin_sekolah;
     }
 
     /**
@@ -45,24 +52,43 @@ class PendaftaranController extends Controller
      */
     public function index(Request $request)
     {
+        $admin_sekolah = $this->admin_sekolah->where('admin_sekolah_id', Auth::user()->id)->first();
+
+        if(is_null($admin_sekolah) && $this->checkRole(['superadministrator']) === false){
+            $response = [];
+            return response()->json($response)
+            ->header('Access-Control-Allow-Origin', '*')
+            ->header('Access-Control-Allow-Methods', 'GET');
+        }
+
+
         if (request()->has('sort')) {
             list($sortCol, $sortDir) = explode('|', request()->sort);
 
-            $query = $this->pendaftaran->with('kegiatan')->with('user')->orderBy($sortCol, $sortDir);
+            if($this->checkRole(['superadministrator'])){
+                $query = $this->pendaftaran->with('kegiatan')->with('user')->orderBy($sortCol, $sortDir);
+            }else{
+                $query = $this->pendaftaran->where('sekolah_id', $admin_sekolah->sekolah_id)->with('kegiatan')->with('user')->orderBy($sortCol, $sortDir);
+            }
+
         } else {
-            $query = $this->pendaftaran->with('kegiatan')->with('user')->orderBy('id', 'asc');
+            if($this->checkRole(['superadministrator'])){
+                $query = $this->pendaftaran->with('kegiatan')->with('user')->orderBy($sortCol, $sortDir);
+            }else{
+                $query = $this->pendaftaran->where('sekolah_id', $admin_sekolah->sekolah_id)->with('kegiatan')->with('user')->orderBy('id', 'asc');
+            }
+
         }
 
         if ($request->exists('filter')) {
             $query->where(function($q) use($request) {
                 $value = "%{$request->filter}%";
-                $q->where('label', 'like', $value)
-                    ->orWhere('description', 'like', $value);
+                $q->where(\DB::raw('CAST(tanggal_pendaftaran AS varchar)'), 'like', $value);
             });
         }
 
         $perPage = request()->has('per_page') ? (int) request()->per_page : null;
-        $response = $query->paginate($perPage);
+        $response = $query->with(['sekolah'])->paginate($perPage);
 
         return response()->json($response)
             ->header('Access-Control-Allow-Origin', '*')
@@ -76,12 +102,25 @@ class PendaftaranController extends Controller
      */
     public function create()
     {
-        $response = [];        
+        $admin_sekolah = $this->admin_sekolah->where('admin_sekolah_id', Auth::user()->id)->first();
 
-        $kegiatan = $this->kegiatanModel->all();
-        $users_special = $this->user->all();
-        $users_standar = $this->user->find(\Auth::User()->id);
-        
+        $response = [];
+
+        $kegiatan       = $this->kegiatanModel->all();
+        if($this->checkRole(['superadministrator'])){
+            $sekolahs       = $this->sekolah->all();
+        }else{
+            $sekolahs       = $this->sekolah->where('id',$admin_sekolah->sekolah_id)->get();
+        }
+
+        $users_special  = $this->user->all();
+        $users_standar  = $this->user->find(\Auth::User()->id);
+        $current_user   = \Auth::User();
+
+        foreach($sekolahs as $sekolah){
+            array_set($sekolah, 'label', $sekolah->nama);
+        }
+
         $role_check = \Auth::User()->hasRole(['superadministrator','administrator']);
 
         if($role_check){
@@ -94,10 +133,17 @@ class PendaftaranController extends Controller
             $response['user_special'] = false;
             array_set($users_standar, 'label', $users_standar->name);
             $response['user'] = $users_standar;
-        } 
+        }
 
-        $response['kegiatan'] = $kegiatan;        
-        $response['status'] = true;
+        array_set($current_user, 'label', $current_user->name);
+
+        $response['current_user']   = $current_user;
+        $response['kegiatan']       = $kegiatan;
+        //$response['user']           = $users;
+        $response['sekolah']        = $sekolahs;
+        $response['error']          = false;
+        $response['message']        = 'Success';
+        $response['status']         = true;
 
         return response()->json($response);
     }
@@ -110,40 +156,44 @@ class PendaftaranController extends Controller
      */
     public function store(Request $request)
     {
-        $pendaftaran = $this->pendaftaran;
+        $admin_sekolah = $this->admin_sekolah->where('admin_sekolah_id', Auth::user()->id)->first();
+
+        $pendaftaran        = $this->pendaftaran;
+        $current_user_id    = $request->user_id;
 
         $validator = Validator::make($request->all(), [
-            'kegiatan_id' => 'required',
-            'user_id' => 'required|max:16|unique:pendaftarans,user_id',
-            'label' => 'required|max:16|unique:pendaftarans,label',
-            'description' => 'max:255',
+            'kegiatan_id'           => 'required',
+            'user_id'               => "required|exists:{$this->user->getTable()},id",
+            'tanggal_pendaftaran'   => 'required',
+            'sekolah_id'            => 'required',
         ]);
 
-        if($validator->fails()){
+        if($admin_sekolah->sekolah_id != $request->sekolah_id && $this->checkRole(['superadministrator']) === false){
+            $response['error']      = true;
+            $response['message']    = 'Terjadi kesalahan, mohon ulangi lagi pengisian data yang benar.';
+            $response['status']     = true;
 
-            $check = $pendaftaran->where('label',$request->label)->orWhere('user_id', $request->user_id)->whereNull('deleted_at')->count();
-
-            if ($check > 0) {
-                $response['message'] = 'Failed, label or user already exists';
-            } else {
-                $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
-                $pendaftaran->user_id = $request->input('user_id');
-                $pendaftaran->label = $request->input('label');
-                $pendaftaran->description = $request->input('description');                
-                $pendaftaran->save();
-
-                $response['message'] = 'success';
-            }
-        } else {
-            $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
-            $pendaftaran->user_id = $request->input('user_id');
-            $pendaftaran->label = $request->input('label');
-            $pendaftaran->description = $request->input('description');            
-            $pendaftaran->save();
-            $response['message'] = 'success';
+            return response()->json($response);
         }
 
-        $response['status'] = true;
+        if ($validator->fails()) {
+            $error      = true;
+            $message    = $validator->errors()->first();
+
+            } else {
+                $pendaftaran->kegiatan_id           = $request->input('kegiatan_id');
+                $pendaftaran->user_id               = $current_user_id;
+                $pendaftaran->tanggal_pendaftaran   = $request->input('tanggal_pendaftaran');
+                $pendaftaran->sekolah_id            = $request->input('sekolah_id');
+                $pendaftaran->save();
+
+                $error      = false;
+                $message    = 'Success';
+            }
+
+        $response['error']      = $error;
+        $response['message']    = $message;
+        $response['status']     = true;
 
         return response()->json($response);
     }
@@ -156,12 +206,21 @@ class PendaftaranController extends Controller
      */
     public function show($id)
     {
-        $pendaftaran = $this->pendaftaran->findOrFail($id);
+        $admin_sekolah = $this->admin_sekolah->where('admin_sekolah_id', Auth::user()->id)->first();
 
-        $response['pendaftaran'] = $pendaftaran;
-        $response['kegiatan'] = $pendaftaran->kegiatan;
-        $response['user'] = $pendaftaran->user;
-        $response['status'] = true;
+        if($this->checkRole(['superadministrator'])){
+            $pendaftaran = $this->pendaftaran->findOrFail($id);
+        }else{
+            $pendaftaran = $this->pendaftaran->where('sekolah_id', $admin_sekolah->sekolah_id)->findOrFail($id);
+        }
+
+
+
+        $response['pendaftaran']    = $pendaftaran;
+        $response['kegiatan']       = $pendaftaran->kegiatan;
+        $response['sekolah']        = $pendaftaran->sekolah;
+        $response['user']           = $pendaftaran->user;
+        $response['status']         = true;
 
         return response()->json($response);
     }
@@ -174,14 +233,26 @@ class PendaftaranController extends Controller
      */
     public function edit($id)
     {
-        $pendaftaran = $this->pendaftaran->findOrFail($id);
+        $admin_sekolah = $this->admin_sekolah->where('admin_sekolah_id', Auth::user()->id)->first();
 
-        array_set($pendaftaran->user, 'label', $pendaftaran->user->name);
+        if($this->checkRole(['superadministrator'])){
+            $pendaftaran = $this->pendaftaran->with(['kegiatan', 'sekolah', 'user' ])->findOrFail($id);
+        }else{
+            $pendaftaran = $this->pendaftaran->where('sekolah_id', $admin_sekolah->sekolah_id)->with(['kegiatan', 'sekolah', 'user' ])->findOrFail($id);
+        }
 
-        $response['pendaftaran'] = $pendaftaran;
-        $response['kegiatan'] = $pendaftaran->kegiatan;
-        $response['user'] = $pendaftaran->user;
-        $response['status'] = true;
+
+        $response['pendaftaran']['user']     = array_add($pendaftaran->user, 'label', $pendaftaran->user->name);
+
+
+
+        $response['pendaftaran']    = $pendaftaran;
+        //$response['kegiatan']       = $pendaftaran->kegiatan;
+        //$response['sekolah']        = $pendaftaran->sekolah->nama;
+        //$response['user']           = $pendaftaran->user;
+        $response['error']          = false;
+        $response['message']        = 'Success';
+        $response['status']         = true;
 
         return response()->json($response);
     }
@@ -194,98 +265,47 @@ class PendaftaranController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
-    {      
-        $response = [];
-                  
-        $pendaftaran = $this->pendaftaran->findOrFail($id);
+    {
+        $admin_sekolah = $this->admin_sekolah->where('admin_sekolah_id', Auth::user()->id)->first();
 
-        if($request->old_label == $request->label && $request->user_id != $request->old_user_id){
-            $validator = Validator::make($request->all(), [
-                'label' => 'required',
-                'description' => 'max:255',
-                'kegiatan_id' => 'required',
-                'user_id' => 'required|unique:pendaftarans,user_id',
-            ]);
-            $fail = "user_id";
-        }elseif($request->old_label != $request->label && $request->user_id == $request->old_user_id){
-            $validator = Validator::make($request->all(), [
-                'label' => 'required|unique:pendaftarans,label',
-                'description' => 'max:255',
-                'kegiatan_id' => 'required',
-                'user_id' => 'required',
-            ]);
-            $fail = "label";
-        }elseif($request->old_label == $request->label && $request->user_id == $request->old_user_id){
-            $validator = Validator::make($request->all(), [
-                'label' => 'required',
-                'description' => 'max:255',
-                'kegiatan_id' => 'required',
-                'user_id' => 'required',
-            ]);
+        if($this->checkRole(['superadministrator'])){
+            $pendaftaran = $this->pendaftaran->with(['kegiatan', 'sekolah', 'user' ])->findOrFail($id);
         }else{
-            $validator = Validator::make($request->all(), [
-                'label' => 'required|unique:pendaftarans,label',
-                'description' => 'max:255',
-                'kegiatan_id' => 'required',
-                'user_id' => 'required|unique:pendaftarans,label',
-            ]);
-            $fail = "label & user_id";
+            $pendaftaran = $this->pendaftaran->where('sekolah_id', $admin_sekolah->sekolah_id)->with(['kegiatan', 'sekolah', 'user' ])->findOrFail($id);
+
+            if(is_null($pendaftaran)){
+                $response['error']      = true;
+                $response['message']    = 'Terjadi kesalahan saat update data.';
+                $response['status']     = true;
+
+                return response()->json($response);
+            }
         }
+
+
+        $validator = Validator::make($request->all(), [
+            'kegiatan_id'           => 'required',
+            'tanggal_pendaftaran'   => 'required',
+            'sekolah_id'            => 'required',
+        ]);
 
         if ($validator->fails()) {
+            $error      = true;
+            $message    = $validator->errors()->first();
 
-            $check_user = $pendaftaran->where('user_id', $request->user_id)->whereNull('deleted_at')->count();
-
-            $check_label = $pendaftaran->where('label',$request->label)->whereNull('deleted_at')->count();
-
-            if($fail == "label"){
-                if ($check_label > 0) {                    
-                    $response['message'] = 'Failed, label already exists';
-                }else{
-                    $pendaftaran->label = $request->input('label');
-                    $pendaftaran->description = $request->input('description');
-                    $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
-                    $pendaftaran->user_id = $request->input('user_id');
-                    $pendaftaran->save();
-
-                    $response['message'] = 'success'; 
-                }
-            }elseif($fail == "user_id"){
-                if ($check_user > 0) {                    
-                    $response['message'] = 'Failed, user already exists';
-                }else{
-                    $pendaftaran->label = $request->input('label');
-                    $pendaftaran->description = $request->input('description');
-                    $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
-                    $pendaftaran->user_id = $request->input('user_id');
-                    $pendaftaran->save();
-
-                    $response['message'] = 'success';
-                }
-            }else{
-                if ($check_user > 0 && $check_label > 0) {                    
-                    $response['message'] = 'Failed, user and label already exists';
-                }else{
-                    $pendaftaran->label = $request->input('label');
-                    $pendaftaran->description = $request->input('description');
-                    $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
-                    $pendaftaran->user_id = $request->input('user_id');
-                    $pendaftaran->save();
-
-                    $response['message'] = 'success';
-                }
-            }                       
         } else {
-            $pendaftaran->label = $request->input('label');
-            $pendaftaran->description = $request->input('description');
-            $pendaftaran->kegiatan_id = $request->input('kegiatan_id');
-            $pendaftaran->user_id = $request->input('user_id');
+            $pendaftaran->kegiatan_id           = $request->input('kegiatan_id');
+            $pendaftaran->tanggal_pendaftaran   = $request->input('tanggal_pendaftaran');
+            $pendaftaran->sekolah_id            = $request->input('sekolah_id');
             $pendaftaran->save();
 
-            $response['message'] = 'success';
+            $error      = false;
+            $message    = 'Success';
         }
 
-        $response['status'] = true;
+        $response['error']      = $error;
+        $response['message']    = $message;
+        $response['status']     = true;
 
         return response()->json($response);
     }
@@ -298,6 +318,11 @@ class PendaftaranController extends Controller
      */
     public function destroy($id)
     {
+        if(!$this->checkRole(['superadministrator'])){
+            $response['status'] = false;
+            return json_encode($response);
+        }
+
         $pendaftaran = $this->pendaftaran->findOrFail($id);
 
         if ($pendaftaran->delete()) {
@@ -307,5 +332,10 @@ class PendaftaranController extends Controller
         }
 
         return json_encode($response);
+    }
+
+    protected function checkRole($role = array())
+    {
+        return Auth::user()->hasRole($role);
     }
 }
