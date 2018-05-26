@@ -13,19 +13,43 @@
     </div>
 
     <div class="card-body">
-      <dl class="row">
-          <dt class="col-4">Tanggal Pendaftaran</dt>
-          <dd class="col-8">{{ model.tanggal_pendaftaran }}</dd>
+      <vue-form class="form-horizontal form-validation" :state="state" @submit.prevent="onSubmit">
+        <dl class="row">
 
-          <dt class="col-4">Kegiatan</dt>
-          <dd class="col-8">{{ model.kegiatan.label }}</dd>
+            <dt class="col-4">Nama Siswa</dt>
+            <dd class="col-8">{{ model.nama_siswa }}</dd>
 
-          <dt class="col-4">Sekolah Tujuan</dt>
-          <dd class="col-8">{{ model.sekolah.nama }}</dd>
+            <dt class="col-4">Jenis Pendaftaran</dt>
+            <dd class="col-8">{{ model.kegiatan.label }}</dd>
+
+            <dt class="col-4">Sekolah Tujuan</dt>
+            <dd class="col-8">{{ model.sekolah.nama }}</dd>
+
+            <dt class="col-4">Tanggal Pendaftaran</dt>
+            <dd class="col-8">{{ model.tanggal_pendaftaran }}</dd>
+
+            <dt class="col-4">Jenis SKTM</dt>
+            <dd class="col-8">{{ model.jenis_sktm }}</dd>
+
+            <dt class="col-4">Nomor SKTM</dt>
+            <dd class="col-8">{{ model.sktm }}</dd>
+
+            <dt class="col-4">Prestasi</dt>
+            <dd class="col-8">{{ model.nama_lomba }}</dd>
+
+            <dt class="col-4">Jenis Prestasi</dt>
+            <dd class="col-8">{{ model.jenis_prestasi }}</dd>
+
+            <dt class="col-4">Juara</dt>
+            <dd class="col-8">{{ model.juara }}</dd>
+
+            <dt class="col-4">Tingkat</dt>
+            <dd class="col-8">{{ model.tingkat }}</dd>
 
 
-      </dl>
-  
+        </dl>
+        <workflow-process content-type="Pendaftaran"></workflow-process>
+      </vue-form>
     </div>
      <div class="card-footer text-muted">
         <div class="row">
@@ -53,23 +77,30 @@ export default {
           this.model.sekolah              = response.data.sekolah;
           this.model.created_at           = response.data.pendaftaran.created_at;
           this.model.updated_at           = response.data.pendaftaran.updated_at;
-        } else {
+        }else{
           alert('Failed');
         }
       })
       .catch(function(response) {
-        alert('Break');
-        window.location.href = '#/admin/pendaftaran';
+        // alert('Break');
+        // window.location.href = '#/admin/pendaftaran';
       }),
 
-      axios.get('api/pendaftaran/create')
+      axios.get('api/pendaftaran/create/'+ this.$route.params.id)
       .then(response => {
           response.data.kegiatan.forEach(element => {
             this.kegiatan.push(element);
           });
+          this.model.nama_siswa     = response.data.siswa.nama_siswa;
+          this.model.jenis_sktm     = response.data.jenis_sktm.nama;
+          this.model.sktm           = response.data.sktm.no_sktm;
+          this.model.nama_lomba     = response.data.prestasi.nama_lomba;
+          this.model.juara          = response.data.master_prestasi.juara_label;
+          this.model.tingkat        = response.data.master_prestasi.tingkat_label;
+          this.model.jenis_prestasi = response.data.jenis_prestasi.nama;
       })
       .catch(function(response) {
-        alert('Break');
+        // alert('Break');
       })
   },
   data() {
@@ -82,9 +113,11 @@ export default {
         sekolah             : "",
         created_at          : "",
         updated_at          : "",
+        nama_siswa          : "",
       },
       kegiatan: [],
       sekolah : [],
+      siswa : [],
     }
   },
   methods: {
@@ -113,7 +146,7 @@ export default {
             }
           })
           .catch(function(response) {
-            alert('Break ' + response.data.message);
+            // alert('Break ' + response.data.message);
           });
       }
     },

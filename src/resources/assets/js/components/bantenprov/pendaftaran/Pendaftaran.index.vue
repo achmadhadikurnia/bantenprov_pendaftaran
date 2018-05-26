@@ -26,7 +26,7 @@
 
       <div class="table-responsive">
         <vuetable ref="vuetable"
-          api-url="/api/pendaftaran-siswa"
+          api-url="/api/pendaftaran"
           :fields="fields"
           :sort-order="sortOrder"
           :css="css.table"
