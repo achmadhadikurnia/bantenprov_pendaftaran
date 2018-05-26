@@ -20,10 +20,10 @@
             <dd class="col-8">{{ model.nama_siswa }}</dd>
 
             <dt class="col-4">Jenis Pendaftaran</dt>
-            <dd class="col-8">{{ model.kegiatan.label }}</dd>
+            <dd class="col-8">{{ model.jenis_pendaftaran }}</dd>
 
             <dt class="col-4">Sekolah Tujuan</dt>
-            <dd class="col-8">{{ model.sekolah.nama }}</dd>
+            <dd class="col-8">{{ model.sekolah_tujuan }}</dd>
 
             <dt class="col-4">Tanggal Pendaftaran</dt>
             <dd class="col-8">{{ model.tanggal_pendaftaran }}</dd>
@@ -32,7 +32,7 @@
             <dd class="col-8">{{ model.jenis_sktm }}</dd>
 
             <dt class="col-4">Nomor SKTM</dt>
-            <dd class="col-8">{{ model.sktm }}</dd>
+            <dd class="col-8">{{ model.no_sktm }}</dd>
 
             <dt class="col-4">Prestasi</dt>
             <dd class="col-8">{{ model.nama_lomba }}</dd>
@@ -46,7 +46,6 @@
             <dt class="col-4">Tingkat</dt>
             <dd class="col-8">{{ model.tingkat }}</dd>
 
-
         </dl>
         <workflow-process content-type="Pendaftaran"></workflow-process>
       </vue-form>
@@ -54,7 +53,7 @@
      <div class="card-footer text-muted">
         <div class="row">
           <div class="col-md">
-            <b>Username :</b> {{ model.user.name }}
+            <b>Username :</b> {{ model.username }}
           </div>
           <div class="col-md">
             <div class="col-md text-right">Dibuat : {{ model.created_at }}</div>
@@ -70,54 +69,42 @@ export default {
   mounted() {
     axios.get('api/pendaftaran/' + this.$route.params.id)
       .then(response => {
-        if (response.data.status == true) {
-          this.model.tanggal_pendaftaran  = response.data.pendaftaran.tanggal_pendaftaran;
-          this.model.kegiatan             = response.data.kegiatan;
-          this.model.user                 = response.data.user;
-          this.model.sekolah              = response.data.sekolah;
-          this.model.created_at           = response.data.pendaftaran.created_at;
-          this.model.updated_at           = response.data.pendaftaran.updated_at;
-        }else{
-          alert('Failed');
-        }
+          this.model.tanggal_pendaftaran    = response.data.tanggal_pendaftaran;
+          this.model.nama_siswa             = response.data.nama_siswa;
+          this.model.jenis_pendaftaran      = response.data.jenis_pendaftaran;
+          this.model.sekolah_tujuan         = response.data.sekolah_tujuan;
+          this.model.jenis_sktm             = response.data.jenis_sktm;
+          this.model.no_sktm                = response.data.no_sktm;
+          this.model.nama_lomba             = response.data.nama_lomba;
+          this.model.jenis_prestasi         = response.data.jenis_prestasi;
+          this.model.juara                  = response.data.juara;
+          this.model.tingkat                = response.data.tingkat;
+          this.model.created_at             = response.data.created_at;
+          this.model.updated_at             = response.data.updated_at;
       })
       .catch(function(response) {
         // alert('Break');
         // window.location.href = '#/admin/pendaftaran';
-      }),
-
-      axios.get('api/pendaftaran/create/'+ this.$route.params.id)
-      .then(response => {
-          response.data.kegiatan.forEach(element => {
-            this.kegiatan.push(element);
-          });
-          this.model.nama_siswa     = response.data.siswa.nama_siswa;
-          this.model.jenis_sktm     = response.data.jenis_sktm.nama;
-          this.model.sktm           = response.data.sktm.no_sktm;
-          this.model.nama_lomba     = response.data.prestasi.nama_lomba;
-          this.model.juara          = response.data.master_prestasi.juara_label;
-          this.model.tingkat        = response.data.master_prestasi.tingkat_label;
-          this.model.jenis_prestasi = response.data.jenis_prestasi.nama;
-      })
-      .catch(function(response) {
-        // alert('Break');
       })
   },
   data() {
     return {
       state: {},
       model: {
-        tanggal_pendaftaran : "",
-        user                : "",
-        kegiatan            : "",
-        sekolah             : "",
-        created_at          : "",
-        updated_at          : "",
         nama_siswa          : "",
+        jenis_pendaftaran   : "",
+        sekolah_tujuan      : "",
+        tanggal_pendaftaran : "",
+        jenis_sktm          : "",
+        no_sktm             : "",
+        username            : "",
+        nama_lomba          : "",
+        jenis_prestasi      : "",
+        juara               : "",
+        tingkat             : "",
+        created_at          : "",
+        updated_at          : ""
       },
-      kegiatan: [],
-      sekolah : [],
-      siswa : [],
     }
   },
   methods: {
