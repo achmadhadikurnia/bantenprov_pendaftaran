@@ -12,6 +12,13 @@ use Bantenprov\Kegiatan\Models\Bantenprov\Kegiatan\Kegiatan;
 use Bantenprov\Sekolah\Models\Bantenprov\Sekolah\Sekolah;
 use Bantenprov\Sekolah\Models\Bantenprov\Sekolah\AdminSekolah;
 use App\User;
+use Bantenprov\Siswa\Models\Bantenprov\Siswa\Siswa;
+use Bantenprov\Sktm\Models\Bantenprov\Sktm\MasterSktm;
+use Bantenprov\Sktm\Models\Bantenprov\Sktm\Sktm;
+use Bantenprov\Prestasi\Models\Bantenprov\Prestasi\JenisPrestasi;
+use Bantenprov\Prestasi\Models\Bantenprov\Prestasi\MasterPrestasi;
+use Bantenprov\Prestasi\Models\Bantenprov\Prestasi\Prestasi;
+use Bantenprov\Prestasi\Http\Controllers\MasterPrestasiController;
 
 /* Etc */
 use Validator;
@@ -35,14 +42,28 @@ class PendaftaranController extends Controller
     protected $user;
     protected $sekolah;
     protected $admin_sekolah;
+    protected $siswa;
+    protected $mastersktm;
+    protected $sktm;
+    protected $jenisprestasi;
+    protected $masterprestasi;
+    protected $masterprestasicont;
+    protected $prestasi;
 
-    public function __construct(Pendaftaran $pendaftaran, Kegiatan $kegiatan, User $user, Sekolah $sekolah, AdminSekolah $admin_sekolah)
+    public function __construct()
     {
-        $this->pendaftaran      = $pendaftaran;
-        $this->kegiatanModel    = $kegiatan;
-        $this->user             = $user;
-        $this->sekolah          = $sekolah;
-        $this->admin_sekolah    = $admin_sekolah;
+        $this->pendaftaran          = new Pendaftaran;
+        $this->kegiatanModel        = new Kegiatan;
+        $this->user                 = new User;
+        $this->sekolah              = new Sekolah;
+        $this->admin_sekolah        = new AdminSekolah;
+        $this->siswa                = new Siswa;
+        $this->sktm                 = new Sktm;
+        $this->mastersktm           = new MasterSktm;
+        $this->jenisprestasi        = new JenisPrestasi;
+        $this->masterprestasi       = new MasterPrestasi;
+        $this->masterprestasicont   = new MasterPrestasiController;
+        $this->prestasi             = new Prestasi;
     }
 
     /**
@@ -59,40 +80,39 @@ class PendaftaranController extends Controller
             return response()->json($response)
             ->header('Access-Control-Allow-Origin', '*')
             ->header('Access-Control-Allow-Methods', 'GET');
+        }else{
+            $page  					= 10;
+            $data 					= $this->pendaftaran
+                                    ->select(
+                                        'pendaftarans.id',
+                                        'users.name',
+                                        'pendaftarans.tanggal_pendaftaran',
+                                        'sekolahs.nama',
+                                        'kegiatans.label',
+                                        'siswas.nama_siswa'
+                                    )
+                                    ->leftjoin(
+                                        'sekolahs',
+                                        'pendaftarans.sekolah_id','=','sekolahs.id'
+                                    )
+                                    ->leftjoin(
+                                        'kegiatans',
+                                        'pendaftarans.kegiatan_id','=','kegiatans.id'
+                                    )
+                                    ->leftjoin(
+                                        'users',
+                                        'pendaftarans.user_id','=','users.id'
+                                    )
+                                    ->leftjoin(
+                                        'siswas',
+                                        'users.name','=','siswas.nomor_un'
+                                    )
+                                    ->where('pendaftarans.sekolah_id','=',$admin_sekolah->sekolah_id)
+                                    ->paginate($page);
+            return response()->json($data)
+                ->header('Access-Control-Allow-Origin', '*')
+                ->header('Access-Control-Allow-Methods', 'GET');            
         }
-
-
-        if (request()->has('sort')) {
-            list($sortCol, $sortDir) = explode('|', request()->sort);
-
-            if($this->checkRole(['superadministrator'])){
-                $query = $this->pendaftaran->with('kegiatan')->with('user')->orderBy($sortCol, $sortDir);
-            }else{
-                $query = $this->pendaftaran->where('sekolah_id', $admin_sekolah->sekolah_id)->with('kegiatan')->with('user')->orderBy($sortCol, $sortDir);
-            }
-
-        } else {
-            if($this->checkRole(['superadministrator'])){
-                $query = $this->pendaftaran->with('kegiatan')->with('user')->orderBy($sortCol, $sortDir);
-            }else{
-                $query = $this->pendaftaran->where('sekolah_id', $admin_sekolah->sekolah_id)->with('kegiatan')->with('user')->orderBy('id', 'asc');
-            }
-
-        }
-
-        if ($request->exists('filter')) {
-            $query->where(function($q) use($request) {
-                $value = "%{$request->filter}%";
-                $q->where(\DB::raw('CAST(tanggal_pendaftaran AS varchar)'), 'like', $value);
-            });
-        }
-
-        $perPage = request()->has('per_page') ? (int) request()->per_page : null;
-        $response = $query->with(['sekolah'])->paginate($perPage);
-
-        return response()->json($response)
-            ->header('Access-Control-Allow-Origin', '*')
-            ->header('Access-Control-Allow-Methods', 'GET');
     }
 
     /**
@@ -100,7 +120,7 @@ class PendaftaranController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create($id)
     {
         $admin_sekolah = $this->admin_sekolah->where('admin_sekolah_id', Auth::user()->id)->first();
 
@@ -113,6 +133,7 @@ class PendaftaranController extends Controller
             $sekolahs       = $this->sekolah->where('id',$admin_sekolah->sekolah_id)->get();
         }
 
+
         $users_special  = $this->user->all();
         $users_standar  = $this->user->find(\Auth::User()->id);
         $current_user   = \Auth::User();
@@ -120,6 +141,23 @@ class PendaftaranController extends Controller
         foreach($sekolahs as $sekolah){
             array_set($sekolah, 'label', $sekolah->nama);
         }
+
+        //return $current_user_id    = $request->user_id;
+
+        $siswas         = $this->siswa->find($id);
+        array_set($siswas, 'label', $siswas->nama_siswa);
+
+        $pendaftarans   = $this->pendaftaran->find($id);
+        $sktms          = $this->sktm->where('nomor_un',$pendaftarans->nomor_un)->first();
+        $jenis_sktms    = $this->mastersktm->where('id',$sktms->master_sktm_id)->first();
+
+        $prestasis          = $this->prestasi->where('nomor_un',$pendaftarans->nomor_un)->first();
+        $master_prestasis   = $this->masterprestasi->where('id',$prestasis->master_prestasi_id)->first();
+        $juara_prestasi     = $this->masterprestasicont->juara_label($master_prestasis->juara);
+        $tingkat_prestasi   = $this->masterprestasicont->tingkat_label($master_prestasis->tingkat);
+        array_set($master_prestasis,'juara_label',$juara_prestasi);
+        array_set($master_prestasis,'tingkat_label',$tingkat_prestasi);
+        $jenis_prestasis    = $this->jenisprestasi->where('id',$master_prestasis->jenis_prestasi_id)->first();
 
         $role_check = \Auth::User()->hasRole(['superadministrator','administrator']);
 
@@ -139,11 +177,16 @@ class PendaftaranController extends Controller
 
         $response['current_user']   = $current_user;
         $response['kegiatan']       = $kegiatan;
-        //$response['user']           = $users;
         $response['sekolah']        = $sekolahs;
         $response['error']          = false;
         $response['message']        = 'Success';
         $response['status']         = true;
+        $response['siswa']          = $siswas;
+        $response['sktm']           = $sktms;
+        $response['jenis_sktm']     = $jenis_sktms;
+        $response['jenis_prestasi'] = $jenis_prestasis;
+        $response['master_prestasi']= $master_prestasis;
+        $response['prestasi']       = $prestasis;
 
         return response()->json($response);
     }
@@ -220,6 +263,9 @@ class PendaftaranController extends Controller
         $response['kegiatan']       = $pendaftaran->kegiatan;
         $response['sekolah']        = $pendaftaran->sekolah;
         $response['user']           = $pendaftaran->user;
+        $response['siswa']          = $pendaftaran->siswa;
+        // $response['prestasi']       = $pendaftaran->sekolah;
+        // $response['sktm']          = $pendaftaran->sekolah;
         $response['status']         = true;
 
         return response()->json($response);
@@ -337,5 +383,5 @@ class PendaftaranController extends Controller
     protected function checkRole($role = array())
     {
         return Auth::user()->hasRole($role);
-    }
+    }    
 }
