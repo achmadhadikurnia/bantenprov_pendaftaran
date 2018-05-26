@@ -14,7 +14,7 @@ class CreatePendaftaransTable extends Migration
 	{
 		Schema::create('pendaftarans', function(Blueprint $table) {
 			$table->increments('id');
-			$table->integer('user_id');
+			$table->string('user_id');
 			$table->integer('kegiatan_id');
 			$table->dateTime('tanggal_pendaftaran')->nullable();
 			$table->integer('sekolah_id')->nullable();

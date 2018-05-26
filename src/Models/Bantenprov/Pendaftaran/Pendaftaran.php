@@ -36,4 +36,10 @@ class Pendaftaran extends Model
     {
         return $this->belongsTo('App\User','user_id');
     }
+
+    public function siswa()
+    {
+        return $this->hasOne('Bantenprov\Siswa\Models\Bantenprov\Siswa\Siswa','user_id');
+    }
+    
 }
