@@ -144,7 +144,8 @@ class PendaftaranController extends Controller
 
         //return $current_user_id    = $request->user_id;
 
-        $siswas         = $this->siswa->find($id);
+        $pendaftaranid  = $this->pendaftaran->find($id);
+        $siswas         = $this->siswa->where('nomor_un',$pendaftaranid->nomor_un)->first();
         array_set($siswas, 'label', $siswas->nama_siswa);
 
         $pendaftarans   = $this->pendaftaran->find($id);
