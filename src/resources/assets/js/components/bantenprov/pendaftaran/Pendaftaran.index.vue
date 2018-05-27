@@ -41,12 +41,12 @@
               <button class="btn btn-info btn-sm" role="button" @click="viewRow(props.rowData)">
                 <span class="fa fa-eye"></span>
               </button>
-              <button class="btn btn-warning btn-sm" role="button" @click="editRow(props.rowData)">
+              <!-- <button class="btn btn-warning btn-sm" role="button" @click="editRow(props.rowData)">
                 <span class="fa fa-pencil"></span>
               </button>
               <button class="btn btn-danger btn-sm" role="button" @click="deleteRow(props.rowData)">
                 <span class="fa fa-trash"></span>
-              </button>
+              </button> -->
             </div>
           </template>
         </vuetable>
@@ -92,27 +92,33 @@ export default {
           dataClass: 'right aligned'
         },
         {
-          name: 'tanggal_pendaftaran',
-          title: 'Tanggal Pendaftaran',
-          sortField: 'tanggal_pendaftaran',
+          name: 'name',
+          title: 'Nomor UN',
+          sortField: 'user_name',
           titleClass: 'center aligned'
         },
         {
-          name: 'sekolah.nama',
+          name: 'nama_siswa',
+          title: 'Nama Siswa',
+          sortField: 'nomor_un',
+          titleClass: 'center aligned'
+        },
+        {
+          name: 'nama',
           title: 'Sekolah Tujuan',
           sortField: 'sekolah_id',
           titleClass: 'center aligned'
         },
         {
-          name: 'kegiatan.label',
-          title: 'Kegiatan',
+          name: 'label',
+          title: 'Jenis Pendaftaran',
           sortField: 'kegiatan_id',
           titleClass: 'center aligned'
         },
         {
-          name: 'user.name',
-          title: 'Username',
-          sortField: 'user_id',
+          name: 'tanggal_pendaftaran',
+          title: 'Tanggal Pendaftaran',
+          sortField: 'tanggal_pendaftaran',
           titleClass: 'center aligned'
         },
         {
@@ -151,7 +157,7 @@ export default {
   },
   methods: {
     createRow() {
-      window.location = '#/admin/pendaftaran/create';
+      window.location = '#/admin/pendaftaran/create' + rowData.id;
     },
     viewRow(rowData) {
       window.location = '#/admin/pendaftaran/' + rowData.id;
@@ -195,7 +201,6 @@ export default {
       this.moreParams = {
         filter: filterText
       }
-
       Vue.nextTick(() => this.$refs.vuetable.refresh())
     },
     'filter-reset'() {

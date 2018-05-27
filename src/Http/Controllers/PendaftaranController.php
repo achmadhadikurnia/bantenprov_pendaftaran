@@ -12,6 +12,13 @@ use Bantenprov\Kegiatan\Models\Bantenprov\Kegiatan\Kegiatan;
 use Bantenprov\Sekolah\Models\Bantenprov\Sekolah\Sekolah;
 use Bantenprov\Sekolah\Models\Bantenprov\Sekolah\AdminSekolah;
 use App\User;
+use Bantenprov\Siswa\Models\Bantenprov\Siswa\Siswa;
+use Bantenprov\Sktm\Models\Bantenprov\Sktm\MasterSktm;
+use Bantenprov\Sktm\Models\Bantenprov\Sktm\Sktm;
+use Bantenprov\Prestasi\Models\Bantenprov\Prestasi\JenisPrestasi;
+use Bantenprov\Prestasi\Models\Bantenprov\Prestasi\MasterPrestasi;
+use Bantenprov\Prestasi\Models\Bantenprov\Prestasi\Prestasi;
+use Bantenprov\Prestasi\Http\Controllers\MasterPrestasiController;
 
 /* Etc */
 use Validator;
@@ -35,14 +42,28 @@ class PendaftaranController extends Controller
     protected $user;
     protected $sekolah;
     protected $admin_sekolah;
+    protected $siswa;
+    protected $mastersktm;
+    protected $sktm;
+    protected $jenisprestasi;
+    protected $masterprestasi;
+    protected $masterprestasicont;
+    protected $prestasi;
 
-    public function __construct(Pendaftaran $pendaftaran, Kegiatan $kegiatan, User $user, Sekolah $sekolah, AdminSekolah $admin_sekolah)
+    public function __construct()
     {
-        $this->pendaftaran      = $pendaftaran;
-        $this->kegiatanModel    = $kegiatan;
-        $this->user             = $user;
-        $this->sekolah          = $sekolah;
-        $this->admin_sekolah    = $admin_sekolah;
+        $this->pendaftaran          = new Pendaftaran;
+        $this->kegiatanModel        = new Kegiatan;
+        $this->user                 = new User;
+        $this->sekolah              = new Sekolah;
+        $this->admin_sekolah        = new AdminSekolah;
+        $this->siswa                = new Siswa;
+        $this->sktm                 = new Sktm;
+        $this->mastersktm           = new MasterSktm;
+        $this->jenisprestasi        = new JenisPrestasi;
+        $this->masterprestasi       = new MasterPrestasi;
+        $this->masterprestasicont   = new MasterPrestasiController;
+        $this->prestasi             = new Prestasi;
     }
 
     /**
@@ -59,93 +80,39 @@ class PendaftaranController extends Controller
             return response()->json($response)
             ->header('Access-Control-Allow-Origin', '*')
             ->header('Access-Control-Allow-Methods', 'GET');
-        }
-
-
-        if (request()->has('sort')) {
-            list($sortCol, $sortDir) = explode('|', request()->sort);
-
-            if($this->checkRole(['superadministrator'])){
-                $query = $this->pendaftaran->with('kegiatan')->with('user')->orderBy($sortCol, $sortDir);
-            }else{
-                $query = $this->pendaftaran->where('sekolah_id', $admin_sekolah->sekolah_id)->with('kegiatan')->with('user')->orderBy($sortCol, $sortDir);
-            }
-
-        } else {
-            if($this->checkRole(['superadministrator'])){
-                $query = $this->pendaftaran->with('kegiatan')->with('user')->orderBy($sortCol, $sortDir);
-            }else{
-                $query = $this->pendaftaran->where('sekolah_id', $admin_sekolah->sekolah_id)->with('kegiatan')->with('user')->orderBy('id', 'asc');
-            }
-
-        }
-
-        if ($request->exists('filter')) {
-            $query->where(function($q) use($request) {
-                $value = "%{$request->filter}%";
-                $q->where(\DB::raw('CAST(tanggal_pendaftaran AS varchar)'), 'like', $value);
-            });
-        }
-
-        $perPage = request()->has('per_page') ? (int) request()->per_page : null;
-        $response = $query->with(['sekolah'])->paginate($perPage);
-
-        return response()->json($response)
-            ->header('Access-Control-Allow-Origin', '*')
-            ->header('Access-Control-Allow-Methods', 'GET');
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        $admin_sekolah = $this->admin_sekolah->where('admin_sekolah_id', Auth::user()->id)->first();
-
-        $response = [];
-
-        $kegiatan       = $this->kegiatanModel->all();
-        if($this->checkRole(['superadministrator'])){
-            $sekolahs       = $this->sekolah->all();
         }else{
-            $sekolahs       = $this->sekolah->where('id',$admin_sekolah->sekolah_id)->get();
+            $page  					= 10;
+            $data 					= $this->pendaftaran
+                                    ->select(
+                                        'pendaftarans.id',
+                                        'users.name',
+                                        'pendaftarans.tanggal_pendaftaran',
+                                        'sekolahs.nama',
+                                        'kegiatans.label',
+                                        'siswas.nama_siswa'
+                                    )
+                                    ->leftjoin(
+                                        'sekolahs',
+                                        'pendaftarans.sekolah_id','=','sekolahs.id'
+                                    )
+                                    ->leftjoin(
+                                        'kegiatans',
+                                        'pendaftarans.kegiatan_id','=','kegiatans.id'
+                                    )
+                                    ->leftjoin(
+                                        'users',
+                                        'pendaftarans.user_id','=','users.id'
+                                    )
+                                    ->leftjoin(
+                                        'siswas',
+                                        'users.name','=','siswas.nomor_un'
+                                    )
+                                    ->where('pendaftarans.sekolah_id','=',$admin_sekolah->sekolah_id)
+                                    ->paginate($page);
+            return response()->json($data)
+                ->header('Access-Control-Allow-Origin', '*')
+                ->header('Access-Control-Allow-Methods', 'GET');            
         }
-
-        $users_special  = $this->user->all();
-        $users_standar  = $this->user->find(\Auth::User()->id);
-        $current_user   = \Auth::User();
-
-        foreach($sekolahs as $sekolah){
-            array_set($sekolah, 'label', $sekolah->nama);
-        }
-
-        $role_check = \Auth::User()->hasRole(['superadministrator','administrator']);
-
-        if($role_check){
-            $response['user_special'] = true;
-            foreach($users_special as $user){
-                array_set($user, 'label', $user->name);
-            }
-            $response['user'] = $users_special;
-        }else{
-            $response['user_special'] = false;
-            array_set($users_standar, 'label', $users_standar->name);
-            $response['user'] = $users_standar;
-        }
-
-        array_set($current_user, 'label', $current_user->name);
-
-        $response['current_user']   = $current_user;
-        $response['kegiatan']       = $kegiatan;
-        //$response['user']           = $users;
-        $response['sekolah']        = $sekolahs;
-        $response['error']          = false;
-        $response['message']        = 'Success';
-        $response['status']         = true;
-
-        return response()->json($response);
     }
 
     /**
@@ -186,7 +153,6 @@ class PendaftaranController extends Controller
                 $pendaftaran->tanggal_pendaftaran   = $request->input('tanggal_pendaftaran');
                 $pendaftaran->sekolah_id            = $request->input('sekolah_id');
                 $pendaftaran->save();
-
                 $error      = false;
                 $message    = 'Success';
             }
@@ -206,23 +172,116 @@ class PendaftaranController extends Controller
      */
     public function show($id)
     {
+
+        // $admin_sekolah = $this->admin_sekolah->where('admin_sekolah_id', Auth::user()->id)->first();
+        // if($this->checkRole(['superadministrator'])){
+        //     $pendaftaran = $this->pendaftaran->findOrFail($id);
+        // }else{
+        //     $pendaftaran = $this->pendaftaran->where('sekolah_id', $admin_sekolah->sekolah_id)->findOrFail($id);
+        // }
+        
+
+
         $admin_sekolah = $this->admin_sekolah->where('admin_sekolah_id', Auth::user()->id)->first();
 
         if($this->checkRole(['superadministrator'])){
-            $pendaftaran = $this->pendaftaran->findOrFail($id);
+//            $pendaftaran = $this->pendaftaran->findOrFail($id);
         }else{
-            $pendaftaran = $this->pendaftaran->where('sekolah_id', $admin_sekolah->sekolah_id)->findOrFail($id);
+            $data 					= $this->pendaftaran
+                                    ->select(
+                                        'siswas.nama_siswa',
+                                        'kegiatans.label as jenis_pendaftaran',
+                                        'pendaftarans.id',
+                                        'users.name',
+                                        'pendaftarans.tanggal_pendaftaran',
+                                        'sekolahs.nama as sekolah_tujuan',
+                                        'master_sktms.nama as jenis_sktm',
+                                        'sktms.no_sktm',
+                                        'prestasis.nama_lomba',
+                                        'jenis_prestasis.nama as jenis_prestasi',
+                                        'master_prestasis.juara',
+                                        'master_prestasis.tingkat'                                        
+                                    )
+                                    ->leftjoin(
+                                        'sekolahs',
+                                        'pendaftarans.sekolah_id','=','sekolahs.id'
+                                    )
+                                    ->leftjoin(
+                                        'kegiatans',
+                                        'pendaftarans.kegiatan_id','=','kegiatans.id'
+                                    )
+                                    ->leftjoin(
+                                        'users',
+                                        'pendaftarans.user_id','=','users.id'
+                                    )
+                                    ->leftjoin(
+                                        'siswas',
+                                        'users.name','=','siswas.nomor_un'
+                                    )
+                                    ->leftjoin(
+                                        'sktms',
+                                        'pendaftarans.nomor_un','=','sktms.nomor_un'
+                                    )                                    
+                                    ->leftjoin(
+                                        'master_sktms',
+                                        'sktms.master_sktm_id','=','master_sktms.id'
+                                    )                                    
+                                    ->leftjoin(
+                                        'prestasis',
+                                        'pendaftarans.nomor_un','=','prestasis.nomor_un'
+                                    )
+                                    ->leftjoin(
+                                        'master_prestasis',
+                                        'prestasis.master_prestasi_id','=','master_prestasis.id'
+                                    )
+                                    ->leftjoin(
+                                        'jenis_prestasis',
+                                        'master_prestasis.jenis_prestasi_id','=','jenis_prestasis.id'
+                                    )
+                                    ->where('pendaftarans.id','=',$id)
+                                    ->first();
+                // $result         = array();
+                // foreach((array)$data as $key => $val){
+                //     if($key == '*attributes'){
+                //         dd($val);
+                //         foreach($val as $key1 => $val1){
+                //             if($key1 == 'juara'){
+                //                 $result['juara']    = $this->masterprestasi->prestasi_label($val1);
+                //             }elseif($key1 == 'tingkat'){
+                //                 $result['tingkat']  = $this->masterprestasi->tingkat_label($val1);
+                //             }else{
+                //                 $result[$key1]      = $val1;
+                //             }
+                //         }
+                //     }
+                // }
+                return response()->json($data)
+                    ->header('Access-Control-Allow-Origin', '*')
+                    ->header('Access-Control-Allow-Methods', 'GET');            
         }
 
+        // $response['pendaftaran']    = $pendaftaran;
+        // $response['kegiatan']       = $pendaftaran->kegiatan;
+        // $response['sekolah']        = $pendaftaran->sekolah;
+        // $response['user']           = $pendaftaran->user;
+        // $response['siswa']          = $pendaftaran->siswa;
+        // /*
+        // // $response['prestasi']       = $pendaftaran->sekolah;
+        // // $response['sktm']          = $pendaftaran->sekolah;
+        // */
 
-
-        $response['pendaftaran']    = $pendaftaran;
-        $response['kegiatan']       = $pendaftaran->kegiatan;
-        $response['sekolah']        = $pendaftaran->sekolah;
-        $response['user']           = $pendaftaran->user;
-        $response['status']         = true;
-
-        return response()->json($response);
+        // $response['nama_siswa']             = $data->nama_siswa;
+        // $response['jenis_pendaftaran']      = $data->label;
+        // $response['sekolah_tujuan']         = $data->nama;
+        // $response['tanggal_pendaftaran']    = $data->tanggal_pendaftaran;
+        // $response['jenis_sktm']             = $data->nama;
+        // $response['no_sktm']                = $data->no_sktm;
+        // $response['prestasi']               = $data->nama_lomba;
+        // $response['jenis_prestasi']         = $data->nama;
+        // $response['juara']                  = $data->juara;
+        // $response['tingkat']                = $data->tingkat;
+        // $response['status']                 = true;
+        // return response()->json($response);
     }
 
     /**
@@ -337,5 +396,5 @@ class PendaftaranController extends Controller
     protected function checkRole($role = array())
     {
         return Auth::user()->hasRole($role);
-    }
+    }    
 }
