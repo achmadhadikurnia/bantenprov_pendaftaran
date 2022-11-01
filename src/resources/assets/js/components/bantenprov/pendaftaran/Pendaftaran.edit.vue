@@ -17,8 +17,7 @@
         <div class="form-row">
           <div class="col-md">
             <validate tag="div">
-              <input class="form-control" v-model="model.tanggal_pendaftaran" required autofocus name="label" type="text" placeholder="tanggal_pendaftaran">
-
+               <input disabled class="form-control" type="datetime"  v-model="model.tanggal_pendaftaran" required name="tanggal_pendaftaran" >
               <field-messages name="tanggal_pendaftaran" show="$invalid && $submitted" class="text-danger">
                 <small class="form-text text-success">Looks good!</small>
                 <small class="form-text text-danger" slot="required">Tanggal Pendaftaran is a required field</small>
@@ -40,6 +39,20 @@
 						</validate>
 					</div>
 				</div>
+
+        <div class="form-row mt-4">
+          <div class="col-md">
+            <validate tag="div">
+            <label for="sekolah_id">Sekolah tujuan</label>
+            <v-select name="sekolah_id" v-model="model.sekolah" :options="sekolah" class="mb-4"></v-select>
+
+            <field-messages name="sekolah_id" show="$invalid && $submitted" class="text-danger">
+              <small class="form-text text-success">Looks good!</small>
+              <small class="form-text text-danger" slot="required">Label is a required field</small>
+            </field-messages>
+            </validate>
+          </div>
+        </div>
 
         <div class="form-row mt-4">
 					<div class="col-md">
@@ -69,16 +82,28 @@
 </template>
 
 <script>
+import swal from 'sweetalert2'
+import VueMoment from 'vue-moment'
+import moment from 'moment-timezone'
+
+Vue.use(VueMoment, {
+    moment,
+})
+
+var tanggal={}
+tanggal.mydate = moment(new Date()).format("YYYY-MM-DD k:mm:ss ");
 export default {
   mounted() {
     axios.get('api/pendaftaran/' + this.$route.params.id + '/edit')
       .then(response => {
-        if (response.data.status == true) {
-          this.model.user = response.data.user,
-          this.model.old_label = response.data.pendaftaran.label;
-          this.model.old_user_id = response.data.pendaftaran.user_id;
-          this.model.tanggal_pendaftaran = response.data.pendaftaran.tanggal_pendaftaran;
-          this.model.kegiatan = response.data.kegiatan;
+        if (response.data.status == true && response.data.error == false) {
+          this.model.user                 = response.data.pendaftaran.user,
+          this.model.old_label            = response.data.pendaftaran.label;
+          this.model.old_user_id          = response.data.pendaftaran.user_id;
+          this.model.tanggal_pendaftaran  = response.data.pendaftaran.tanggal_pendaftaran;
+          this.model.sekolah              = response.data.pendaftaran.sekolah;
+          this.model.kegiatan             = response.data.pendaftaran.kegiatan;
+       
         } else {
           alert('Failed');
         }
@@ -90,34 +115,55 @@ export default {
 
       axios.get('api/pendaftaran/create')
       .then(response => {
+        if (response.data.status == true && response.data.error == false)
           response.data.kegiatan.forEach(element => {
             this.kegiatan.push(element);
           });
+          response.data.sekolah.forEach(element => {
+            this.sekolah.push(element);
+          });
+          
           if(response.data.user_special == true){
             response.data.user.forEach(user_element => {
               this.user.push(user_element);
             });
           }else{
             this.user.push(response.data.user);
+              swal(
+              'Failed',
+              'Oops... '+response.data.message,
+              'error'
+            );
+
+            app.back();
           }
       })
       .catch(function(response) {
-        alert('Break');
-        window.location.href = '#/admin/pendaftaran';
-      })
+        swal(
+          'Not Found',
+          'Oops... Your page is not found.',
+          'error'
+        );
+
+        app.back();
+      });
+      
   },
   data() {
     return {
       state: {},
       model: {
-        tanggal_pendaftaran: "",
-        user: "",
-        kegiatan: "",
-        old_label: "",
-        old_user_id: ""
+        tanggal_pendaftaran : tanggal.mydate,
+        user                : "",
+        user_id             : "",
+        kegiatan            : "",
+        old_label           : "",
+        old_user_id         : "",
+        sekolah             : "",
       },
-      kegiatan: [],
-      user: []
+      kegiatan    : [],
+      user        : [],
+      sekolah     : [],
     }
   },
   methods: {
@@ -128,26 +174,49 @@ export default {
         return;
       } else {
         axios.put('api/pendaftaran/' + this.$route.params.id, {
-            tanggal_pendaftaran: this.model.tanggal_pendaftaran,
-            old_label: this.model.old_label,
-            old_user_id: this.model.old_user_id,
-            kegiatan_id: this.model.kegiatan.id,
-            user_id: this.model.user.id
+
+            tanggal_pendaftaran : this.model.tanggal_pendaftaran,
+            old_label           : this.model.old_label,
+            old_user_id         : this.model.old_user_id,
+            kegiatan_id         : this.model.kegiatan.id,
+            user_id             : this.model.user.id,
+            sekolah_id          : this.model.sekolah.id,
           })
           .then(response => {
             if (response.data.status == true) {
-              if(response.data.message == 'success'){
-                alert(response.data.message);
+              if(response.data.error == false){
+                swal(
+                  'Updated',
+                  'Yeah!!! Your data has been updated.',
+                  'success'
+                );
+
                 app.back();
               }else{
-                alert(response.data.message);
+                swal(
+                  'Failed',
+                  'Oops... '+response.data.message,
+                  'error'
+                );
               }
             } else {
-              alert(response.data.message);
+              swal(
+                'Failed',
+                'Oops... '+response.data.message,
+                'error'
+              );
+
+              app.back();
             }
           })
           .catch(function(response) {
-            alert('Break ' + response.data.message);
+            swal(
+              'Not Found',
+              'Oops... Your page is not found.',
+              'error'
+            );
+
+            app.back();
           });
       }
     },

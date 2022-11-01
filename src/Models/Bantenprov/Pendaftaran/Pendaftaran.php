@@ -19,6 +19,8 @@ class Pendaftaran extends Model
         'kegiatan_id',
         'user_id',
         'tanggal_pendaftaran',
+        'sekolah_id',
+        'nomor_un',
     ];
 
     public function kegiatan()
@@ -26,8 +28,19 @@ class Pendaftaran extends Model
         return $this->belongsTo('Bantenprov\Kegiatan\Models\Bantenprov\Kegiatan\Kegiatan','kegiatan_id');
     }
 
+    public function sekolah()
+    {
+        return $this->belongsTo('Bantenprov\Sekolah\Models\Bantenprov\Sekolah\Sekolah','sekolah_id');
+    }
+
     public function user()
     {
         return $this->belongsTo('App\User','user_id');
     }
+
+    public function siswa()
+    {
+        return $this->hasOne('Bantenprov\Siswa\Models\Bantenprov\Siswa\Siswa','user_id');
+    }
+    
 }

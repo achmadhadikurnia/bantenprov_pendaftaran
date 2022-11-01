@@ -14,25 +14,46 @@
 
     <div class="card-body">
       <vue-form class="form-horizontal form-validation" :state="state" @submit.prevent="onSubmit">
+        <dl class="row">
 
-        <div class="form-row mt-4">
-          <div class="col-md">
-            <b>Tanggal Pendaftaran :</b> {{ model.tanggal_pendaftaran }}
-          </div>
-        </div>
+            <dt class="col-4">Nama Siswa</dt>
+            <dd class="col-8">{{ model.nama_siswa }}</dd>
 
-        <div class="form-row mt-4">
-					<div class="col-md">
-						<b>Kegiatan :</b> {{ model.kegiatan.label }}
-					</div>
-				</div>
+            <dt class="col-4">Jenis Pendaftaran</dt>
+            <dd class="col-8">{{ model.jenis_pendaftaran }}</dd>
 
+            <dt class="col-4">Sekolah Tujuan</dt>
+            <dd class="col-8">{{ model.sekolah_tujuan }}</dd>
+
+            <dt class="col-4">Tanggal Pendaftaran</dt>
+            <dd class="col-8">{{ model.tanggal_pendaftaran }}</dd>
+
+            <dt class="col-4">Jenis SKTM</dt>
+            <dd class="col-8">{{ model.jenis_sktm }}</dd>
+
+            <dt class="col-4">Nomor SKTM</dt>
+            <dd class="col-8">{{ model.no_sktm }}</dd>
+
+            <dt class="col-4">Prestasi</dt>
+            <dd class="col-8">{{ model.nama_lomba }}</dd>
+
+            <dt class="col-4">Jenis Prestasi</dt>
+            <dd class="col-8">{{ model.jenis_prestasi }}</dd>
+
+            <dt class="col-4">Juara</dt>
+            <dd class="col-8">{{ model.juara }}</dd>
+
+            <dt class="col-4">Tingkat</dt>
+            <dd class="col-8">{{ model.tingkat }}</dd>
+
+        </dl>
+        <workflow-process content-type="Pendaftaran"></workflow-process>
       </vue-form>
     </div>
      <div class="card-footer text-muted">
         <div class="row">
           <div class="col-md">
-            <b>Username :</b> {{ model.user.name }}
+            <b>Username :</b> {{ model.username }}
           </div>
           <div class="col-md">
             <div class="col-md text-right">Dibuat : {{ model.created_at }}</div>
@@ -48,42 +69,42 @@ export default {
   mounted() {
     axios.get('api/pendaftaran/' + this.$route.params.id)
       .then(response => {
-        if (response.data.status == true) {
-          this.model.tanggal_pendaftaran = response.data.pendaftaran.tanggal_pendaftaran;
-          this.model.kegiatan = response.data.kegiatan;
-          this.model.user = response.data.user;
-          this.model.created_at = response.data.pendaftaran.created_at;
-          this.model.updated_at = response.data.pendaftaran.updated_at;
-        } else {
-          alert('Failed');
-        }
+          this.model.tanggal_pendaftaran    = response.data.tanggal_pendaftaran;
+          this.model.nama_siswa             = response.data.nama_siswa;
+          this.model.jenis_pendaftaran      = response.data.jenis_pendaftaran;
+          this.model.sekolah_tujuan         = response.data.sekolah_tujuan;
+          this.model.jenis_sktm             = response.data.jenis_sktm;
+          this.model.no_sktm                = response.data.no_sktm;
+          this.model.nama_lomba             = response.data.nama_lomba;
+          this.model.jenis_prestasi         = response.data.jenis_prestasi;
+          this.model.juara                  = response.data.juara;
+          this.model.tingkat                = response.data.tingkat;
+          this.model.created_at             = response.data.created_at;
+          this.model.updated_at             = response.data.updated_at;
       })
       .catch(function(response) {
-        alert('Break');
-        window.location.href = '#/admin/pendaftaran';
-      }),
-
-      axios.get('api/pendaftaran/create')
-      .then(response => {
-          response.data.kegiatan.forEach(element => {
-            this.kegiatan.push(element);
-          });
-      })
-      .catch(function(response) {
-        alert('Break');
+        // alert('Break');
+        // window.location.href = '#/admin/pendaftaran';
       })
   },
   data() {
     return {
       state: {},
       model: {
-        tanggal_pendaftaran: "",
-        user:"",
-        kegiatan: "",
-        created_at: "",
-        updated_at: "",
+        nama_siswa          : "",
+        jenis_pendaftaran   : "",
+        sekolah_tujuan      : "",
+        tanggal_pendaftaran : "",
+        jenis_sktm          : "",
+        no_sktm             : "",
+        username            : "",
+        nama_lomba          : "",
+        jenis_prestasi      : "",
+        juara               : "",
+        tingkat             : "",
+        created_at          : "",
+        updated_at          : ""
       },
-      kegiatan: []
     }
   },
   methods: {
@@ -112,7 +133,7 @@ export default {
             }
           })
           .catch(function(response) {
-            alert('Break ' + response.data.message);
+            // alert('Break ' + response.data.message);
           });
       }
     },
